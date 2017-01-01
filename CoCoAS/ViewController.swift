@@ -13,6 +13,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     var client:MSBClient? = nil;
     let tileID:NSUUID = NSUUID.init(UUIDString: "CABDBA9F-12FD-47A5-8453-E7270A43BB99")!;
     
+    @IBOutlet weak var message: UILabel!
     @IBOutlet weak var HRtext: UILabel!
     @IBOutlet weak var GSRtext: UILabel!
     @IBOutlet weak var accXtext: UILabel!
@@ -57,9 +58,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         // Dispose of any resources that can be recreated.
     }
     
-    func tileWithButtonLayout()->MSBPageData{
+    /*func tileWithButtonLayout()->MSBPageData{
         //レイアウト作る
-    }
+    }*/
     
     //MARK:-
     //MARK: Helper methods
@@ -80,7 +81,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             let bodyString = "Please labeled."; //+ 現在時刻
             //TODO:通知する
             //FIXME:weakにする？selfにした方がよい？
-            client.notificationManager.showDialogWithTileID(tileID, title: tileString, body: bodyString, completionHandler:<#T##((NSError!) -> Void)!##((NSError!) -> Void)!##(NSError!) -> Void#>);
+            //client.notificationManager.showDialogWithTileID(tileID, title: tileString, body: bodyString, completionHandler:<#T##((NSError!) -> Void)!##((NSError!) -> Void)!##(NSError!) -> Void#>);
             
             //TODO:通知した時刻を保存
             
