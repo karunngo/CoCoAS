@@ -17,10 +17,10 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         super.viewDidLoad()
         
         
-        //setView
+        //TODO:set View
         
         
-        //setCoreDataManager
+        //TODO:set CoreDataManager
         
         
         //connect Band
@@ -30,6 +30,12 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             //エラーメッセージ表示
         }
         MSBClientManager.sharedManager().connectClient(self.client);
+        
+        //TODO:create tile on Band
+        
+        
+        //TODO:start get lifelogs
+        
         
         
         
@@ -41,21 +47,34 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         // Dispose of any resources that can be recreated.
     }
     
+    func tileWithButtonLayout()->MSBPageData{
+        //レイアウト作る
+    }
+    
+    //MARK:-
+    //MARK: Helper methods
+    func seveCoreData(){
+        
+    }
     
     
     
 
-    //MARK:send notification to Band
+    //MARK: -
+    //MARK:Notification manage
     func sendNotificationToBand(client:MSBClient){
         
         if judgeStress() {
             let now = NSDate();
             let tileString = "Are You Stressed?";
             let bodyString = "Please labeled."; //+ 現在時刻
-            //ここで通知する(weakにしたほうがよい？selfにした方がよい？
-            client.notificationManager.showDialogWithTileID(tileID, title: tileString, body: bodyString, completionHandler: <#T##((NSError!) -> Void)!##((NSError!) -> Void)!##(NSError!) -> Void#>);
+            //TODO:通知する
+            //FIXME:weakにする？selfにした方がよい？
+            client.notificationManager.showDialogWithTileID(tileID, title: tileString, body: bodyString, completionHandler:<#T##((NSError!) -> Void)!##((NSError!) -> Void)!##(NSError!) -> Void#>);
             
-            //通知した時刻を保存
+            //TODO:通知した時刻を保存
+            
+            //TODO:一度通知したらしばらく繰り返さない
         }
 
     }
@@ -67,9 +86,11 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     }
     
     
-    
+    //MARK: -
     //MARK:LifelogDatasUpdate
-    
+    //TODO:HRの追加
+    //TODO:GSRの追加
+    //TODO:加速度の追加
     func startHeartRateUpdates(client:MSBClient){
         
     }
@@ -79,24 +100,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     }
     
     
-    
-    //MARK:MSBClientManagerDelegate
-    func clientManager(clientManager: MSBClientManager!, clientDidConnect client: MSBClient!) {
-        
-    }
-    
-    func clientManager(clientManager: MSBClientManager!, clientDidDisconnect client: MSBClient!) {
-        //再接続
-        MSBClientManager.sharedManager().connectClient(self.client);
-    }
-    
-    func clientManager(clientManager: MSBClientManager!, client: MSBClient!, didFailToConnectWithError error: NSError!) {
-        //再接続
-        MSBClientManager.sharedManager().connectClient(self.client);
-        
-    }
-    
-    
+    //MARK: -
     //MARK:MSBClitentTileDelegate
     func client(client: MSBClient!, tileDidOpen event: MSBTileEvent!) {
         
@@ -111,6 +115,22 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         //Bandへの通知(取得できたよありがとう)
         //ラベル・時刻を取得
         //DBに保存
+        
+    }
+    
+    //MARK:MSBClientManagerDelegate
+    func clientManager(clientManager: MSBClientManager!, clientDidConnect client: MSBClient!) {
+        
+    }
+    
+    func clientManager(clientManager: MSBClientManager!, clientDidDisconnect client: MSBClient!) {
+        //再接続
+        MSBClientManager.sharedManager().connectClient(self.client);
+    }
+    
+    func clientManager(clientManager: MSBClientManager!, client: MSBClient!, didFailToConnectWithError error: NSError!) {
+        //再接続
+        MSBClientManager.sharedManager().connectClient(self.client);
         
     }
     
