@@ -13,6 +13,16 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     var client:MSBClient? = nil;
     let tileID:NSUUID = NSUUID.init(UUIDString: "CABDBA9F-12FD-47A5-8453-E7270A43BB99")!;
     
+    @IBOutlet weak var HRtext: UILabel!
+    @IBOutlet weak var GSRtext: UILabel!
+    @IBOutlet weak var accXtext: UILabel!
+    @IBOutlet weak var accYtext: UILabel!
+    @IBOutlet weak var accZtext: UILabel!
+    @IBOutlet weak var latitudeText: UILabel!
+    @IBOutlet weak var longitudeText: UILabel!
+    
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
