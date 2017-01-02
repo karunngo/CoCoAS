@@ -46,14 +46,28 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         MSBClientManager.sharedManager().connectClient(self.client);
         self.message.text="Please wait. Connecting to Band ";
         
+        
         //TODO:create tile on Band
         self.client?.tileDelegate = self;
         var tile:MSBTile = tileWithButtonLayout()!
         self.client?.tileManager.addTile(tile, completionHandler: {
             (err) in
+            weak var weakSelf = self;
             if (err == nil || err.code == MSBErrorType.TileAlreadyExist.rawValue){
-                self.message.text = "Creating a page with text button..."
-                
+                weakSelf!.message.text = "Creating a page with text button..."
+                var pageDatas = weakSelf!.buttonPage();
+                weakSelf!.client?.tileManager.setPages(pageDatas, tileId: weakSelf!.TILEID, completionHandler: {
+                    (err2) in
+                    if err2 == nil {
+                        weakSelf!.message.text = "Page sent!";
+                    }else{
+                        weakSelf!.message.text = err2.description
+                        print("error2:" + err2.description)
+                    }
+                })
+            }else{
+                weakSelf!.message.text = err.description
+                print("error1:" + err.description)
             }
         })
         
@@ -119,8 +133,8 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         return tile
     }
 
-    func buttonPage()->MSBPageData{
-        var pageID:NSUUID = NSUUID.init(UUIDString:  "1234BA9F-12FD-47A5-83A9-E7270A43BB99")!;
+    func buttonPage()->[AnyObject]{
+        let pageID:NSUUID = NSUUID.init(UUIDString:  "1234BA9F-12FD-47A5-83A9-E7270A43BB99")!;
         var pageValue:[AnyObject]? = nil;
         do{
             pageValue = [try MSBPageTextButtonData.init(elementId: 11, text: "Yes!"),
@@ -128,8 +142,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                          try MSBPageTextBlockData.init(elementId: 10, text: "Are You Stressed?")]
         }catch{
         }
-        var pageData = MSBPageData.init(id: pageID, layoutIndex: 0, value: pageValue);
-        return pageData
+        let pageData = MSBPageData.init(id: pageID, layoutIndex: 0, value: pageValue);
+        let pageDatas:[AnyObject] = [pageData!];
+        return pageDatas
     }
 
     
