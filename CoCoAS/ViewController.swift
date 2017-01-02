@@ -48,21 +48,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         self.message.text="Please wait. Connecting to Band "
         
         //TODO:start get lifelogs
-        if self.client?.sensorManager.heartRateUserConsent() == MSBUserConsent.Granted{
-            startHeartRateUpdates(self.client!)
-        }else{
-            self.message.text = "Requesting user consent for accessing HeartRate..."
-            self.client?.sensorManager.requestHRUserConsentWithCompletion(
-                {[weak self](userConsent:Bool,err:NSError!) -> Void in
-                    if let weakSelf = self {
-                        if(userConsent){
-                            weakSelf.startHeartRateUpdates(weakSelf.client!)
-                        }else{
-                            weakSelf.HRtext.text = "User consent declined";
-                        }
-                    }
-                })
-        }
+        
         
         
         
@@ -263,7 +249,22 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 print("error1:" + err.description)
             }
         })
-        
+        //TODO: start to get lifelog
+        if self.client?.sensorManager.heartRateUserConsent() == MSBUserConsent.Granted{
+            startHeartRateUpdates(self.client!)
+        }else{
+            self.message.text = "Requesting user consent for accessing HeartRate..."
+            self.client?.sensorManager.requestHRUserConsentWithCompletion(
+                {[weak self](userConsent:Bool,err:NSError!) -> Void in
+                    if let weakSelf = self {
+                        if(userConsent){
+                            weakSelf.startHeartRateUpdates(weakSelf.client!)
+                        }else{
+                            weakSelf.HRtext.text = "User consent declined";
+                        }
+                    }
+                })
+        }
     }
     
     func clientManager(clientManager: MSBClientManager!, clientDidDisconnect client: MSBClient!) {
