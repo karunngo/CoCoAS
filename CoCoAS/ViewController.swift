@@ -11,7 +11,7 @@ import UIKit
 
 class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDelegate{
     var client:MSBClient? = nil;
-    let tileID:NSUUID = NSUUID.init(UUIDString: "CABDBA9F-12FD-47A5-8453-E7270A43BB99")!;
+    let TILEID:NSUUID = NSUUID.init(UUIDString: "CABDBA9F-12FD-47A5-8453-E7270A43BB99")!;
     
     @IBOutlet weak var message: UILabel!
     @IBOutlet weak var HRtext: UILabel!
@@ -26,23 +26,29 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        
-        //TODO:set View
-        
-        
+        self.message.text="CoCoASにようこそ!";
         //TODO:set CoreDataManager
         
-        
+        //test
+    
         //connect Band
+        MSBClientManager.sharedManager().delegate=self;
+        
         let clients:NSArray = MSBClientManager.sharedManager().attachedClients();
+        if clients.firstObject == nil{
+            self.message.text="Clientsが空だよ！";
+            return
+        }
         self.client = clients.firstObject as? MSBClient;
         if self.client == nil{
-            //エラーメッセージ表示
+            self.message.text="Failed! No Bands attached.";
         }
         MSBClientManager.sharedManager().connectClient(self.client);
+        self.message.text="Please wait. Connecting to Band ";
         
         //TODO:create tile on Band
+        self.client?.tileDelegate = self;
+        
         
         
         //TODO:start get lifelogs
@@ -58,9 +64,28 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         // Dispose of any resources that can be recreated.
     }
     
-    /*func tileWithButtonLayout()->MSBPageData{
+    func tileWithButtonLayout()->MSBPageData{
+        let tileName:String = "CoCoAS Tile";
+        var tile:MSBTile? = nil;
+        //create tile icon
+        do{
+        let tileIcon:MSBIcon = try MSBIcon.init(UIImage: UIImage.init(named: "Stress.png")!)
+        let smallIcon:MSBIcon = try MSBIcon.init(UIImage: UIImage.init(named: "StressS.png")!)
+        tile = try MSBTile.init(id: TILEID, name: tileName, tileIcon: tileIcon, smallIcon: smallIcon)
+        }catch{
+        }
+        
+        //create a textbox
+        var textBlock = MSBPageTextBlock.init(rect: MSBPageRect.init(x: 0, y: 0, width: 200, height: 400), font: MSBPageTextBlockFont.Small)
+        textBlock.baseline = 25
+        textBlock.baselineAlignment = MSBPageTextBlockBaselineAlignment.Relative
+        textBlock.horizontalAlignment = MSBPageHorizontalAlignment.Center
+        textBlock.autoWidth = false
+        textBlock.margins = MSBPageMargins.init(left: 5, top: 2, right: 5, bottom: 2)
+
+        
         //レイアウト作る
-    }*/
+    }
     
     //MARK:-
     //MARK: Helper methods
@@ -76,9 +101,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     func sendNotificationToBand(client:MSBClient){
         
         if judgeStress() {
-            let now = NSDate();
-            let tileString = "Are You Stressed?";
-            let bodyString = "Please labeled."; //+ 現在時刻
+            var now = NSDate();
+            var tileString = "Are You Stressed?";
+            var bodyString = "Please labeled."; //+ 現在時刻
             //TODO:通知する
             //FIXME:weakにする？selfにした方がよい？
             //client.notificationManager.showDialogWithTileID(tileID, title: tileString, body: bodyString, completionHandler:<#T##((NSError!) -> Void)!##((NSError!) -> Void)!##(NSError!) -> Void#>);
