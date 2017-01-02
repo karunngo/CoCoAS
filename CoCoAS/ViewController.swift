@@ -179,20 +179,31 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //TODO:HRの追加
     func startHeartRateUpdates(client:MSBClient){
         self.HRtext.text="Starting now..."
-        var hrData = MSBSensorHeartRateData.init() //?
-        var hr = hrData.heartRate
-        var hrQuality = hrData.quality
-        self.HRtext.text = "HR : " + hr.description
-        sendNotificationToBand(self.client!)
-        
-        /*これエラー表示だね。一先ず後回し
-        do{
-            try let self.client?.sensorManager.startHeartRateUpdatesToQueue(nil, withHandler: {
-            [weak self](HrData : MSBSensorHeartRateData!,hrError:NSError!)in})
-
-        }catch{
+        print("handle手前だよ")
+        let handler = {[weak self](heartRateData:MSBSensorHeartRateData!,error:NSError!) in
+            //ここに中身を書く？
+            print("handle内がスタート")
+            if let weakSelf = self {
+                var hr = heartRateData.heartRate
+                var hrQuality = heartRateData.quality
+                print("HRをアップデートしてるよ")
+                weakSelf.HRtext.text = "HR : " + hr.description
+                weakSelf.sendNotificationToBand(weakSelf.client!)
+            
+                do{
+                    try weakSelf.client?.sensorManager.startHeartRateUpdatesToQueue(nil, withHandler: {
+                        [weak self](HrData : MSBSensorHeartRateData!,hrError:NSError!)in})
+                }catch{
+                }
+            }
+            print("handleのエラー:")
+            print(error.description)
         }
-        */
+        do{
+            try self.client?.sensorManager.startHeartRateUpdatesToQueue(nil, withHandler: handler)
+        }catch let error as NSError{
+            print(error.description)
+        }
         
         
     }
