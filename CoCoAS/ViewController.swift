@@ -22,7 +22,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     @IBOutlet weak var latitudeText: UILabel!
     @IBOutlet weak var longitudeText: UILabel!
     
-    
+    //MARK: -
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -85,6 +85,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         
         //create a textBox
         let textBlock = MSBPageTextBlock.init(rect: MSBPageRect.init(x: 0, y: 0, width: 200, height: 400), font: MSBPageTextBlockFont.Small)
+        textBlock.elementId = 10;
         textBlock.baseline = 25
         textBlock.baselineAlignment = MSBPageTextBlockBaselineAlignment.Relative
         textBlock.horizontalAlignment = MSBPageHorizontalAlignment.Center
@@ -117,12 +118,27 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         tile?.pageLayouts.addObject(pageLayout)
         return tile
     }
+
+    func buttonPage()->MSBPageData{
+        var pageID:NSUUID = NSUUID.init(UUIDString:  "1234BA9F-12FD-47A5-83A9-E7270A43BB99")!;
+        var pageValue:[AnyObject]? = nil;
+        do{
+            pageValue = [try MSBPageTextButtonData.init(elementId: 11, text: "Yes!"),
+                         try MSBPageTextButtonData.init(elementId: 11,text:"No"),
+                         try MSBPageTextBlockData.init(elementId: 10, text: "Are You Stressed?")]
+        }catch{
+        }
+        var pageData = MSBPageData.init(id: pageID, layoutIndex: 0, value: pageValue);
+        return pageData
+    }
+
     
     //MARK:-
     //MARK: Helper methods
     func seveCoreData(){
         
     }
+    
     
     
     
