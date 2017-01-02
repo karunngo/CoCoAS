@@ -11,7 +11,7 @@ import UIKit
 
 class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDelegate{
     var client:MSBClient? = nil;
-    let TILEID:NSUUID = NSUUID.init(UUIDString: "CABDBA9F-12FD-47A5-8453-E7270A43BB99")!;
+    let TILEID:NSUUID = NSUUID.init(UUIDString: "CABDBA9F-12FD-47A5-8453-E7270A43BB98")!;
     
     @IBOutlet weak var message: UILabel!
     @IBOutlet weak var HRtext: UILabel!
@@ -49,6 +49,8 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         
         
         //TODO:create tile on Band
+        
+        
 /*
         var tile:MSBTile = tileWithButtonLayout()!
         self.client?.tileManager.addTile(tile, completionHandler: {
@@ -89,7 +91,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     }
     
     func tileWithButtonLayout()->MSBTile?{
-        let tileName:String = "CoCoAS Tile";
+        let tileName:String = "CoCoAS tile";
         var tile:MSBTile? = nil;
         //create tile icon
         do{
@@ -140,12 +142,13 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         var pageValue:[AnyObject]? = nil;
         do{
             pageValue = [try MSBPageTextButtonData.init(elementId: 11, text: "Yes!"),
-                         try MSBPageTextButtonData.init(elementId: 11,text:"No"),
+                         try MSBPageTextButtonData.init(elementId: 12,text:"No"),
                          try MSBPageTextBlockData.init(elementId: 10, text: "Are You Stressed?")]
         }catch{
         }
         let pageData = MSBPageData.init(id: pageID, layoutIndex: 0, value: pageValue);
         let pageDatas:[AnyObject] = [pageData!];
+        print("pageDatesを返すよ：");
         return pageDatas
     }
 
@@ -221,16 +224,14 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK:MSBClientManagerDelegate
     func clientManager(clientManager: MSBClientManager!, clientDidConnect client: MSBClient!) {
         print("client did connected!!")
+        //TODO: create the page on tile
         var tile:MSBTile = self.tileWithButtonLayout()!
         self.client?.tileManager.addTile(tile, completionHandler: {
             (err) in
             if (err == nil || err.code == MSBErrorType.TileAlreadyExist.rawValue){
                 self.message.text = "Creating a page with text button..."
-                var pageDatas = self.buttonPage();
-                self.client?.tileManager.removePagesInTile(self.TILEID, completionHandler: {
-                    (errD) in
-                    if errD != nil {print("errD ="+errD.description)}
-                    self.client?.tileManager.setPages(pageDatas, tileId: self.TILEID, completionHandler: {
+                var pageDatas = self.buttonPage()
+                self.client?.tileManager.setPages(pageDatas, tileId: self.TILEID, completionHandler: {
                         (err2) in
                         if (err2 == nil) {
                             self.message.text = "Page sent!";
@@ -238,7 +239,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                             self.message.text = err2.description
                             print("error2:" + err2.description)
                         }
-                    })
                 })
             }else{
                 self.message.text = err.description
