@@ -75,14 +75,23 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         }catch{
         }
         
-        //create a textbox
+        //create a textBox
         var textBlock = MSBPageTextBlock.init(rect: MSBPageRect.init(x: 0, y: 0, width: 200, height: 400), font: MSBPageTextBlockFont.Small)
         textBlock.baseline = 25
         textBlock.baselineAlignment = MSBPageTextBlockBaselineAlignment.Relative
         textBlock.horizontalAlignment = MSBPageHorizontalAlignment.Center
         textBlock.autoWidth = false
         textBlock.margins = MSBPageMargins.init(left: 5, top: 2, right: 5, bottom: 2)
-
+        //create a TextButton
+        var buttonYes = MSBPageTextButton.init(rect: MSBPageRect.init(x: 0, y: 0, width: 100, height: 40))
+        buttonYes.elementId = 11
+        buttonYes.horizontalAlignment = MSBPageHorizontalAlignment.Center
+        buttonYes.margins = MSBPageMargins.init(left: 5, top: 2, right: 5, bottom: 2)
+        
+        var buttonNo = MSBPageTextButton.init(rect: MSBPageRect.init(x: 0, y: 0, width: 100, height: 40))
+        buttonNo.elementId = 12
+        buttonNo.horizontalAlignment = MSBPageHorizontalAlignment.Center
+        buttonNo.margins = MSBPageMargins.init(left: 5, top: 2, right: 5, bottom: 2)
         
         //レイアウト作る
     }
