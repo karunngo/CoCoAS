@@ -224,24 +224,24 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         var tile:MSBTile = self.tileWithButtonLayout()!
         self.client?.tileManager.addTile(tile, completionHandler: {
             (err) in
-            weak var weakSelf = self;
             if (err == nil || err.code == MSBErrorType.TileAlreadyExist.rawValue){
-                weakSelf!.message.text = "Creating a page with text button..."
-                var pageDatas = weakSelf!.buttonPage();
-                weakSelf!.client?.tileManager.removePagesInTile(weakSelf!.TILEID, completionHandler: {
+                self.message.text = "Creating a page with text button..."
+                var pageDatas = self.buttonPage();
+                self.client?.tileManager.removePagesInTile(self.TILEID, completionHandler: {
                     (errD) in
-                    weakSelf!.client?.tileManager.setPages(pageDatas, tileId: weakSelf!.TILEID, completionHandler: {
+                    if errD != nil {print("errD ="+errD.description)}
+                    self.client?.tileManager.setPages(pageDatas, tileId: self.TILEID, completionHandler: {
                         (err2) in
                         if (err2 == nil) {
-                            weakSelf!.message.text = "Page sent!";
+                            self.message.text = "Page sent!";
                         }else{
-                            weakSelf!.message.text = err2.description
+                            self.message.text = err2.description
                             print("error2:" + err2.description)
                         }
                     })
                 })
             }else{
-                weakSelf!.message.text = err.description
+                self.message.text = err.description
                 print("error1:" + err.description)
             }
         })
