@@ -64,7 +64,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         // Dispose of any resources that can be recreated.
     }
     
-    func tileWithButtonLayout()->MSBPageData{
+    func tileWithButtonLayout()->MSBTile?{
         let tileName:String = "CoCoAS Tile";
         var tile:MSBTile? = nil;
         //create tile icon
@@ -76,24 +76,38 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         }
         
         //create a textBox
-        var textBlock = MSBPageTextBlock.init(rect: MSBPageRect.init(x: 0, y: 0, width: 200, height: 400), font: MSBPageTextBlockFont.Small)
+        let textBlock = MSBPageTextBlock.init(rect: MSBPageRect.init(x: 0, y: 0, width: 200, height: 400), font: MSBPageTextBlockFont.Small)
         textBlock.baseline = 25
         textBlock.baselineAlignment = MSBPageTextBlockBaselineAlignment.Relative
         textBlock.horizontalAlignment = MSBPageHorizontalAlignment.Center
         textBlock.autoWidth = false
         textBlock.margins = MSBPageMargins.init(left: 5, top: 2, right: 5, bottom: 2)
+        
         //create a TextButton
-        var buttonYes = MSBPageTextButton.init(rect: MSBPageRect.init(x: 0, y: 0, width: 100, height: 40))
+        let buttonYes = MSBPageTextButton.init(rect: MSBPageRect.init(x: 0, y: 0, width: 100, height: 40))
         buttonYes.elementId = 11
         buttonYes.horizontalAlignment = MSBPageHorizontalAlignment.Center
         buttonYes.margins = MSBPageMargins.init(left: 5, top: 2, right: 5, bottom: 2)
         
-        var buttonNo = MSBPageTextButton.init(rect: MSBPageRect.init(x: 0, y: 0, width: 100, height: 40))
+        let buttonNo = MSBPageTextButton.init(rect: MSBPageRect.init(x: 0, y: 0, width: 100, height: 40))
         buttonNo.elementId = 12
         buttonNo.horizontalAlignment = MSBPageHorizontalAlignment.Center
         buttonNo.margins = MSBPageMargins.init(left: 5, top: 2, right: 5, bottom: 2)
         
-        //レイアウト作る
+        //set on panel
+        let flowPanelText = MSBPageFlowPanel.init(rect: MSBPageRect.init(x: 15, y: 0, width: 230, height: 50))
+        let flowPanelButton = MSBPageFlowPanel.init(rect: MSBPageRect.init(x: 15, y: 0, width: 230, height: 50))
+        flowPanelText.addElement(textBlock)
+        flowPanelButton.addElement(buttonYes)
+        flowPanelButton.addElement(buttonNo)
+        
+        let flowPanel = MSBPageFlowPanel.init(rect: MSBPageRect.init(x: 15, y: 0, width: 230, height: 105))
+        flowPanel.addElement(flowPanelText)
+        flowPanel.addElement(flowPanelButton)
+        
+        let pageLayout = MSBPageLayout.init(root: flowPanel)
+        tile?.pageLayouts.addObject(pageLayout)
+        return tile
     }
     
     //MARK:-
