@@ -33,6 +33,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     
         //connect Band
         MSBClientManager.sharedManager().delegate=self;
+        self.client?.tileDelegate = self;
         
         let clients:NSArray = MSBClientManager.sharedManager().attachedClients();
         if clients.firstObject == nil{
@@ -48,7 +49,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         
         
         //TODO:create tile on Band
-        self.client?.tileDelegate = self;
+/*
         var tile:MSBTile = tileWithButtonLayout()!
         self.client?.tileManager.addTile(tile, completionHandler: {
             (err) in
@@ -70,6 +71,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 print("error1:" + err.description)
             }
         })
+ */
         
         
         
@@ -218,6 +220,31 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     
     //MARK:MSBClientManagerDelegate
     func clientManager(clientManager: MSBClientManager!, clientDidConnect client: MSBClient!) {
+        print("client did connected!!")
+        var tile:MSBTile = self.tileWithButtonLayout()!
+        self.client?.tileManager.addTile(tile, completionHandler: {
+            (err) in
+            weak var weakSelf = self;
+            if (err == nil || err.code == MSBErrorType.TileAlreadyExist.rawValue){
+                weakSelf!.message.text = "Creating a page with text button..."
+                var pageDatas = weakSelf!.buttonPage();
+                weakSelf!.client?.tileManager.removePagesInTile(weakSelf!.TILEID, completionHandler: {
+                    (errD) in
+                    weakSelf!.client?.tileManager.setPages(pageDatas, tileId: weakSelf!.TILEID, completionHandler: {
+                        (err2) in
+                        if (err2 == nil) {
+                            weakSelf!.message.text = "Page sent!";
+                        }else{
+                            weakSelf!.message.text = err2.description
+                            print("error2:" + err2.description)
+                        }
+                    })
+                })
+            }else{
+                weakSelf!.message.text = err.description
+                print("error1:" + err.description)
+            }
+        })
         
     }
     
