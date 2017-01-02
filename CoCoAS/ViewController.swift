@@ -10,8 +10,8 @@ import UIKit
 
 
 class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDelegate{
-    var client:MSBClient? = nil;
-    let TILEID:NSUUID = NSUUID.init(UUIDString: "CABDBA9F-12FD-47A5-8453-E7270A43BB98")!;
+    var client:MSBClient? = nil
+    let TILEID:NSUUID = NSUUID.init(UUIDString: "CABDBA9F-12FD-47A5-8453-E7270A43BB98")!
     
     @IBOutlet weak var message: UILabel!
     @IBOutlet weak var HRtext: UILabel!
@@ -26,56 +26,26 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.message.text="CoCoASにようこそ!";
+        self.message.text="CoCoASにようこそ!"
         //TODO:set CoreDataManager
         
         //test
     
         //connect Band
-        MSBClientManager.sharedManager().delegate=self;
-        self.client?.tileDelegate = self;
+        MSBClientManager.sharedManager().delegate=self
+        self.client?.tileDelegate = self
         
-        let clients:NSArray = MSBClientManager.sharedManager().attachedClients();
+        let clients:NSArray = MSBClientManager.sharedManager().attachedClients()
         if clients.firstObject == nil{
-            self.message.text="Clientsが空だよ！";
+            self.message.text="Clientsが空だよ！"
             return
         }
-        self.client = clients.firstObject as? MSBClient;
+        self.client = clients.firstObject as? MSBClient
         if self.client == nil{
-            self.message.text="Failed! No Bands attached.";
+            self.message.text="Failed! No Bands attached."
         }
-        MSBClientManager.sharedManager().connectClient(self.client);
-        self.message.text="Please wait. Connecting to Band ";
-        
-        
-        //TODO:create tile on Band
-        
-        
-/*
-        var tile:MSBTile = tileWithButtonLayout()!
-        self.client?.tileManager.addTile(tile, completionHandler: {
-            (err) in
-            weak var weakSelf = self;
-            if (err == nil || err.code == MSBErrorType.TileAlreadyExist.rawValue){
-                weakSelf!.message.text = "Creating a page with text button..."
-                var pageDatas = weakSelf!.buttonPage();
-                weakSelf!.client?.tileManager.setPages(pageDatas, tileId: weakSelf!.TILEID, completionHandler: {
-                    (err2) in
-                    if err2 == nil {
-                        weakSelf!.message.text = "Page sent!";
-                    }else{
-                        weakSelf!.message.text = err2.description
-                        print("error2:" + err2.description)
-                    }
-                })
-            }else{
-                weakSelf!.message.text = err.description
-                print("error1:" + err.description)
-            }
-        })
- */
-        
-        
+        MSBClientManager.sharedManager().connectClient(self.client)
+        self.message.text="Please wait. Connecting to Band "
         
         //TODO:start get lifelogs
         
@@ -91,8 +61,8 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     }
     
     func tileWithButtonLayout()->MSBTile?{
-        let tileName:String = "CoCoAS tile";
-        var tile:MSBTile? = nil;
+        let tileName:String = "CoCoAS tile"
+        var tile:MSBTile? = nil
         //create tile icon
         do{
         let tileIcon:MSBIcon = try MSBIcon.init(UIImage: UIImage.init(named: "Stress.png")!)
@@ -103,7 +73,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         
         //create a textBox
         let textBlock = MSBPageTextBlock.init(rect: MSBPageRect.init(x: 0, y: 0, width: 200, height: 400), font: MSBPageTextBlockFont.Small)
-        textBlock.elementId = 10;
+        textBlock.elementId = 10
         textBlock.baseline = 25
         textBlock.baselineAlignment = MSBPageTextBlockBaselineAlignment.Relative
         textBlock.horizontalAlignment = MSBPageHorizontalAlignment.Center
@@ -138,17 +108,17 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     }
 
     func buttonPage()->[AnyObject]{
-        let pageID:NSUUID = NSUUID.init(UUIDString:  "1234BA9F-12FD-47A5-83A9-E7270A43BB99")!;
-        var pageValue:[AnyObject]? = nil;
+        let pageID:NSUUID = NSUUID.init(UUIDString:  "1234BA9F-12FD-47A5-83A9-E7270A43BB99")!
+        var pageValue:[AnyObject]? = nil
         do{
             pageValue = [try MSBPageTextButtonData.init(elementId: 11, text: "Yes!"),
                          try MSBPageTextButtonData.init(elementId: 12,text:"No"),
                          try MSBPageTextBlockData.init(elementId: 10, text: "Are You Stressed?")]
         }catch{
         }
-        let pageData = MSBPageData.init(id: pageID, layoutIndex: 0, value: pageValue);
-        let pageDatas:[AnyObject] = [pageData!];
-        print("pageDatesを返すよ：");
+        let pageData = MSBPageData.init(id: pageID, layoutIndex: 0, value: pageValue)
+        let pageDatas:[AnyObject] = [pageData!]
+        print("pageDatesを返すよ：")
         return pageDatas
     }
 
@@ -168,12 +138,12 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     func sendNotificationToBand(client:MSBClient){
         
         if judgeStress() {
-            var now = NSDate();
-            var tileString = "Are You Stressed?";
-            var bodyString = "Please labeled."; //+ 現在時刻
+            var now = NSDate()
+            var tileString = "Are You Stressed?"
+            var bodyString = "Please labeled." //+ 現在時刻
             //TODO:通知する
             //FIXME:weakにする？selfにした方がよい？
-            //client.notificationManager.showDialogWithTileID(tileID, title: tileString, body: bodyString, completionHandler:<#T##((NSError!) -> Void)!##((NSError!) -> Void)!##(NSError!) -> Void#>);
+            //client.notificationManager.showDialogWithTileID(tileID, title: tileString, body: bodyString, completionHandler:<#T##((NSError!) -> Void)!##((NSError!) -> Void)!##(NSError!) -> Void#>)
             
             //TODO:通知した時刻を保存
             
@@ -183,9 +153,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     }
     
     func judgeStress() -> Bool{
-    var isStress:Bool = false;
+    var isStress:Bool = false
         //ここでストレスがあるか判定
-        return isStress;
+        return isStress
     }
     
     
@@ -234,7 +204,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 self.client?.tileManager.setPages(pageDatas, tileId: self.TILEID, completionHandler: {
                         (err2) in
                         if (err2 == nil) {
-                            self.message.text = "Page sent!";
+                            self.message.text = "Page sent!"
                         }else{
                             self.message.text = err2.description
                             print("error2:" + err2.description)
@@ -250,12 +220,12 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     
     func clientManager(clientManager: MSBClientManager!, clientDidDisconnect client: MSBClient!) {
         //再接続
-        MSBClientManager.sharedManager().connectClient(self.client);
+        MSBClientManager.sharedManager().connectClient(self.client)
     }
     
     func clientManager(clientManager: MSBClientManager!, client: MSBClient!, didFailToConnectWithError error: NSError!) {
         //再接続
-        MSBClientManager.sharedManager().connectClient(self.client);
+        MSBClientManager.sharedManager().connectClient(self.client)
         
     }
     
