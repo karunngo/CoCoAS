@@ -48,6 +48,14 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         
         //TODO:create tile on Band
         self.client?.tileDelegate = self;
+        var tile:MSBTile = tileWithButtonLayout()!
+        self.client?.tileManager.addTile(tile, completionHandler: {
+            (err) in
+            if (err == nil || err.code == MSBErrorType.TileAlreadyExist.rawValue){
+                self.message.text = "Creating a page with text button..."
+                
+            }
+        })
         
         
         
