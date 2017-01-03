@@ -166,7 +166,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     func startHeartRateUpdates(client:MSBClient){
         self.HRtext.text="Starting now..."
         print("handle手前だよ")
-        let handler = {[weak self](heartRateData:MSBSensorHeartRateData!,error:NSError!) in
+        let handler = {[weak self](heartRateData:MSBSensorHeartRateData!,handlerror:NSError!) in
             //ここに中身を書く？
             print("handle内がスタート")
             if let weakSelf = self {
@@ -174,7 +174,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 var hrQuality = heartRateData.quality
                 print("HRをアップデートしてるよ")
                 weakSelf.HRtext.text = "HR : " + hr.description
-                weakSelf.sendNotificationToBand(weakSelf.client!)
+                //→これなに？weakSelf.sendNotificationToBand(weakSelf.client!)
             
                 do{
                     try weakSelf.client?.sensorManager.startHeartRateUpdatesToQueue(nil, withHandler: {
@@ -182,8 +182,10 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 }catch{
                 }
             }
-            print("handleのエラー:")
-            print(error.description)
+            if handlerror != nil{
+                print("handleのエラー:")
+                print(handlerror.description)
+            }
         }
         do{
             try self.client?.sensorManager.startHeartRateUpdatesToQueue(nil, withHandler: handler)
