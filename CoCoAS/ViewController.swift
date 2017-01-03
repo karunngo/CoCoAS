@@ -170,9 +170,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             if let weakSelf = self {
                 var hr = heartRateData.heartRate
                 var hrQuality = heartRateData.quality
-                print("HRをアップデートしてるよ")
-                print(hr)
                 let now = NSDate()
+                print("HRをアップデートしてるよ at " + now.description)
+                print(hr)
                 weakSelf.HRtext.text = "HR : " + hr.description + ":" + now.description
                 //→これなに？weakSelf.sendNotificationToBand(weakSelf.client!)
             
