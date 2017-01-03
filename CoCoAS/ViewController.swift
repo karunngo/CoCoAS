@@ -164,16 +164,16 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK:LifelogDatasUpdate
     //TODO:HRの追加
     func startHeartRateUpdates(client:MSBClient){
-        self.HRtext.text="Starting now..."
         print("handle手前だよ")
         let handler = {[weak self](heartRateData:MSBSensorHeartRateData!,handlerror:NSError!) in
             //ここに中身を書く？
-            print("handle内がスタート")
             if let weakSelf = self {
                 var hr = heartRateData.heartRate
                 var hrQuality = heartRateData.quality
                 print("HRをアップデートしてるよ")
-                weakSelf.HRtext.text = "HR : " + hr.description
+                print(hr)
+                let now = NSDate()
+                weakSelf.HRtext.text = "HR : " + hr.description + ":" + now.description
                 //→これなに？weakSelf.sendNotificationToBand(weakSelf.client!)
             
                 do{
@@ -192,6 +192,8 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         }catch let error as NSError{
             print(error.description)
         }
+        let startHRselector:Selector = #selector(ViewController.startHeartRateUpdates)
+        self.performSelector(startHRselector, withObject: nil, afterDelay: 5)
         
         
     }
