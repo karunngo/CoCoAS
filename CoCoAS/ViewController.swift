@@ -238,6 +238,37 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         self.startGSRUpdates()
     }
     //TODO:加速度の追加
+    func startAccelermaterUpdates(){
+        let Acchandler = {[weak self](accData:MSBSensorAccelerometerData!,accError:NSError!)in
+            if let weakSelf = self{
+                var accX = accData.x
+                var accY = accData.y
+                var accZ = accData.z
+                var accS = sqrt(accX*accX + accY*accY + accZ*accZ)
+                let now = NSData()
+                weakSelf.accXtext.text = "AccX : " + accX.description + ":" + now.description
+                weakSelf.accYtext.text = "AccY : " + accY.description + ":" + now.description
+                weakSelf.accZtext.text = "AccZ : " + accZ.description + ":" + now.description
+                
+            }
+        }
+        do{
+            try self.client?.sensorManager.startAccelerometerUpdatesToQueue(nil, withHandler: Acchandler)
+        }catch let error as NSError{
+            print(error.description)
+        }
+        let startAccselector:Selector = #selector(ViewController.startAccelermaterUpdates)
+        self.performSelector(startAccselector, withObject: nil, afterDelay: 3)
+    }
+    
+    func stopAccelermaterUpdates(){
+        do{
+            try self.client?.sensorManager.stopAccelerometerUpdatesErrorRef()
+        }catch{
+        }
+        self.accXtext.text = "try again..."
+        self.startAccelermaterUpdates()
+    }
     
     
     //MARK: -
@@ -300,6 +331,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         }
         
         self.startGSRUpdates()
+        self.startAccelermaterUpdates()
         
     }
     
