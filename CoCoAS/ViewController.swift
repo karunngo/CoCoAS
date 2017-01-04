@@ -169,9 +169,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     
     //MARK: -
     //MARK:LifelogDatasUpdate
-    //TODO:HRの追加
+    //HR
     func startHeartRateUpdates(client:MSBClient){
-        let handler = {[weak self](heartRateData:MSBSensorHeartRateData!,handlerror:NSError!) in
+        let HRhandler = {[weak self](heartRateData:MSBSensorHeartRateData!,handlerror:NSError!) in
             //ここに中身を書く？
             if let weakSelf = self {
                 var hr = heartRateData.heartRate
@@ -192,7 +192,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             }
         }
         do{
-            try self.client?.sensorManager.startHeartRateUpdatesToQueue(nil, withHandler: handler)
+            try self.client?.sensorManager.startHeartRateUpdatesToQueue(nil, withHandler: HRhandler)
         }catch let error as NSError{
             print(error.description)
         }
@@ -211,7 +211,32 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         self.startHeartRateUpdates(self.client!);
     }
 
-    //TODO:GSRの追加
+    //GSR
+    func startGSRUpdates(){
+        let GSRhandler = {[weak self](gsrData:MSBSensorGSRData!,gsrError:NSError!)in
+            if let weakSelf = self {
+                var gsr = gsrData.resistance
+                let now = NSDate()
+                weakSelf.GSRtext.text = "GSR : " + gsr.description + ":" + now.description
+            }
+        }
+        do{
+            try self.client?.sensorManager.startGSRUpdatesToQueue(nil, withHandler: GSRhandler)
+        }catch let error as NSError{
+            print(error.description)
+        }
+        let startGSRselector:Selector = #selector(ViewController.startGSRUpdates)
+        self.performSelector(startGSRselector, withObject: nil, afterDelay: 3)
+    }
+    
+    func stopGSRUpdates(){
+        do{
+            try self.client?.sensorManager.stopGSRUpdatesErrorRef()
+        }catch{
+        }
+        self.GSRtext.text="try again..."
+        self.startGSRUpdates()
+    }
     //TODO:加速度の追加
     
     
@@ -273,6 +298,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                     }
                 })
         }
+        
+        self.startGSRUpdates()
+        
     }
     
     func clientManager(clientManager: MSBClientManager!, clientDidDisconnect client: MSBClient!) {
