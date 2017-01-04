@@ -98,6 +98,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         flowPanelText.addElement(textBlock)
         flowPanelButton.addElement(buttonYes)
         flowPanelButton.addElement(buttonNo)
+        flowPanelButton.orientation = MSBPageFlowPanelOrientation.Horizontal
         
         let flowPanel = MSBPageFlowPanel.init(rect: MSBPageRect.init(x: 15, y: 0, width: 230, height: 105))
         flowPanel.addElement(flowPanelText)
@@ -164,18 +165,15 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK:LifelogDatasUpdate
     //TODO:HRの追加
     func startHeartRateUpdates(client:MSBClient){
-        print("handle手前だよ")
         let handler = {[weak self](heartRateData:MSBSensorHeartRateData!,handlerror:NSError!) in
             //ここに中身を書く？
             if let weakSelf = self {
                 var hr = heartRateData.heartRate
                 var hrQuality = heartRateData.quality
                 let now = NSDate()
-                print("HRをアップデートしてるよ at " + now.description)
+                print("HRをupdate " + now.description)
                 print(hr)
                 weakSelf.HRtext.text = "HR : " + hr.description + ":" + now.description
-                //→これなに？weakSelf.sendNotificationToBand(weakSelf.client!)
-            
                 do{
                     try weakSelf.client?.sensorManager.startHeartRateUpdatesToQueue(nil, withHandler: {
                         [weak self](HrData : MSBSensorHeartRateData!,hrError:NSError!)in})
@@ -194,7 +192,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         }
         let startHRselector:Selector = #selector(ViewController.startHeartRateUpdates)
         self.performSelector(startHRselector, withObject: nil, afterDelay: 5)
-        
+        //UIBackgroundTaskIdentifierを使ってみよっと。Timerじゃダメだった
         
     }
     
