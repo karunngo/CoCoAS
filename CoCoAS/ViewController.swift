@@ -92,6 +92,12 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         buttonNo.horizontalAlignment = MSBPageHorizontalAlignment.Center
         buttonNo.margins = MSBPageMargins.init(left: 5, top: 2, right: 5, bottom: 2)
         
+        do{
+        try buttonYes.pressedColor = MSBColor.init(UIColor:UIColor.redColor())
+        try buttonNo.pressedColor = MSBColor.init(UIColor:UIColor.cyanColor())
+        }catch{
+        print("buttonの色かわらず！")}
+        
         //set on panel
         let flowPanelText = MSBPageFlowPanel.init(rect: MSBPageRect.init(x: 15, y: 0, width: 230, height: 50))
         let flowPanelButton = MSBPageFlowPanel.init(rect: MSBPageRect.init(x: 15, y: 0, width: 230, height: 50))
