@@ -240,15 +240,15 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //TODO:加速度の追加
     func startAccelermaterUpdates(){
         let Acchandler = {[weak self](accData:MSBSensorAccelerometerData!,accError:NSError!)in
-            if let weakSelf = self{
+            if let weakSelf = self {
                 var accX = accData.x
                 var accY = accData.y
                 var accZ = accData.z
                 var accS = sqrt(accX*accX + accY*accY + accZ*accZ)
                 let now = NSData()
-                weakSelf.accXtext.text = "AccX : " + accX.description + ":" + now.description
-                weakSelf.accYtext.text = "AccY : " + accY.description + ":" + now.description
-                weakSelf.accZtext.text = "AccZ : " + accZ.description + ":" + now.description
+                weakSelf.accXtext.text = "AccX : " + accX.description
+                weakSelf.accYtext.text = "AccY : " + accY.description
+                weakSelf.accZtext.text = "AccZ : " + accZ.description
                 
             }
         }
@@ -258,6 +258,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             print(error.description)
         }
         let startAccselector:Selector = #selector(ViewController.startAccelermaterUpdates)
+        print("selector前")
         self.performSelector(startAccselector, withObject: nil, afterDelay: 3)
     }
     

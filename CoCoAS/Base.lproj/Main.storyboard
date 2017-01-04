@@ -107,7 +107,9 @@
                         <outlet property="HRtext" destination="IPH-ys-o53" id="GUs-tB-uGl"/>
                         <outlet property="accXtext" destination="CC9-tK-dV0" id="5OB-rG-aBl"/>
                         <outlet property="accYtext" destination="Ph1-OP-E1R" id="pDi-da-UEk"/>
+                        <outlet property="accZtext" destination="Kby-XO-kG1" id="6Ip-wy-jH7"/>
                         <outlet property="latitudeText" destination="4vM-P7-oBo" id="h4v-xO-dnz"/>
+                        <outlet property="longitudeText" destination="waw-bu-tj7" id="9ff-S3-RBh"/>
                         <outlet property="message" destination="AAZ-5l-oD0" id="tco-oN-Ghl"/>
                     </connections>
                 </viewController>
