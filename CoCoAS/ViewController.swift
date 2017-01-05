@@ -38,8 +38,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     
         //connect Band
         MSBClientManager.sharedManager().delegate=self
-        self.client?.tileDelegate = self
-        
         let clients:NSArray = MSBClientManager.sharedManager().attachedClients()
         if clients.firstObject == nil{
             self.message.text="Clientsが空だよ！"
@@ -287,6 +285,69 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         self.accXtext.text = "try again..."
         self.startAccelermaterUpdates()
     }
+    //MARK:MSBClientManagerDelegate
+    func clientManager(clientManager: MSBClientManager!, clientDidConnect client: MSBClient!) {
+        print("client did connected!!")
+        self.client!.tileDelegate = self
+        //TODO: create the page on tile
+        var tile:MSBTile = self.tileWithButtonLayout()!
+        self.client?.tileManager.addTile(tile, completionHandler: {
+            (err) in
+            if (err == nil || err.code == MSBErrorType.TileAlreadyExist.rawValue){
+                self.message.text = "Creating a page with text button..."
+                var pageDatas = self.buttonPage()
+                self.client?.tileManager.setPages(pageDatas, tileId: self.TILEID, completionHandler: {
+                    (err2) in
+                    if (err2 == nil) {
+                        self.message.text = "Page sent!"
+                    }else{
+                        self.message.text = err2.description
+                        print("error2:" + err2.description)
+                    }
+                })
+            }else{
+                self.message.text = err.description
+                print("error1:" + err.description)
+            }
+        })
+        //TODO: start to get lifelog
+        
+         if self.client?.sensorManager.heartRateUserConsent() == MSBUserConsent.Granted{
+         startHeartRateUpdates(self.client!)
+         }else{
+         self.message.text = "Requesting user consent for accessing HeartRate..."
+         self.client?.sensorManager.requestHRUserConsentWithCompletion(
+         {[weak self](userConsent:Bool,err:NSError!) -> Void in
+         if let weakSelf = self {
+         if(userConsent){
+         weakSelf.startHeartRateUpdates(weakSelf.client!)
+         }else{
+         weakSelf.HRtext.text = "User consent declined";
+         }
+         }
+         })
+         }
+         
+         self.startGSRUpdates()
+         self.startAccelermaterUpdates()
+         
+        
+        /*//start sendNotification
+         self.doNotification = true;
+         self.sendNotificationToBand(self.client!)
+         */
+    }
+    
+    func clientManager(clientManager: MSBClientManager!, clientDidDisconnect client: MSBClient!) {
+        //再接続
+        MSBClientManager.sharedManager().connectClient(self.client)
+    }
+    
+    func clientManager(clientManager: MSBClientManager!, client: MSBClient!, didFailToConnectWithError error: NSError!) {
+        //再接続
+        MSBClientManager.sharedManager().connectClient(self.client)
+        
+    }
     
     
     //MARK: -
@@ -319,66 +380,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         
     }
     
-    //MARK:MSBClientManagerDelegate
-    func clientManager(clientManager: MSBClientManager!, clientDidConnect client: MSBClient!) {
-        print("client did connected!!")
-        //TODO: create the page on tile
-        var tile:MSBTile = self.tileWithButtonLayout()!
-        self.client?.tileManager.addTile(tile, completionHandler: {
-            (err) in
-            if (err == nil || err.code == MSBErrorType.TileAlreadyExist.rawValue){
-                self.message.text = "Creating a page with text button..."
-                var pageDatas = self.buttonPage()
-                self.client?.tileManager.setPages(pageDatas, tileId: self.TILEID, completionHandler: {
-                        (err2) in
-                        if (err2 == nil) {
-                            self.message.text = "Page sent!"
-                        }else{
-                            self.message.text = err2.description
-                            print("error2:" + err2.description)
-                        }
-                })
-            }else{
-                self.message.text = err.description
-                print("error1:" + err.description)
-            }
-        })
-        //TODO: start to get lifelog
-        if self.client?.sensorManager.heartRateUserConsent() == MSBUserConsent.Granted{
-            startHeartRateUpdates(self.client!)
-        }else{
-            self.message.text = "Requesting user consent for accessing HeartRate..."
-            self.client?.sensorManager.requestHRUserConsentWithCompletion(
-                {[weak self](userConsent:Bool,err:NSError!) -> Void in
-                    if let weakSelf = self {
-                        if(userConsent){
-                            weakSelf.startHeartRateUpdates(weakSelf.client!)
-                        }else{
-                            weakSelf.HRtext.text = "User consent declined";
-                        }
-                    }
-                })
-        }
-        
-        self.startGSRUpdates()
-        self.startAccelermaterUpdates()
-        
-        /*//start sendNotification
-        self.doNotification = true;
-        self.sendNotificationToBand(self.client!)
-        */
-    }
-    
-    func clientManager(clientManager: MSBClientManager!, clientDidDisconnect client: MSBClient!) {
-        //再接続
-        MSBClientManager.sharedManager().connectClient(self.client)
-    }
-    
-    func clientManager(clientManager: MSBClientManager!, client: MSBClient!, didFailToConnectWithError error: NSError!) {
-        //再接続
-        MSBClientManager.sharedManager().connectClient(self.client)
-        
-    }
+
     
     
     
