@@ -13,6 +13,8 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     var client:MSBClient? = nil
     let TILEID:NSUUID = NSUUID.init(UUIDString: "CABDBA9F-12FD-47A5-8453-E7270A43BB98")!
     
+    var doNotification:Bool = false;
+    
     @IBOutlet weak var message: UILabel!
     @IBOutlet weak var HRtext: UILabel!
     @IBOutlet weak var GSRtext: UILabel!
@@ -144,28 +146,34 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK: -
     //MARK:Notification manage
     func sendNotificationToBand(client:MSBClient){
-        if judgeStress() {
-            var now = NSDate()
-            var tileString = "Are You Stressed?"
-            var bodyString = "Please labeled." //+ 現在時刻
-            //TODO:通知する
-            client.notificationManager.showDialogWithTileID(TILEID, title: tileString, body: bodyString, completionHandler:{
-            (sendError) in
-                if(sendError != nil){
-                    print("Send dialog!")
-                    //TODO:通知した時刻を保存
-                }else{
-                    print("sendDialogError!:")
-                    print(sendError.description)
-                }
-            })
-            //TODO:一度通知したらしばらく繰り返さない
+        print("Notification開始したよ！")
+        while(self.doNotification){
+            if judgeStress() {
+                var now = NSDate()
+                var tileString = "Are You Stressed?"
+                var bodyString = "Please labeled." //+ 現在時刻
+                //TODO:通知する
+                client.notificationManager.showDialogWithTileID(TILEID, title: tileString, body: bodyString, completionHandler:{
+                    (sendError) in
+                    if(sendError != nil){
+                        print("Send dialog!")
+                        //TODO:通知した時刻を保存
+                        self.doNotification = false
+                        //5分止める
+                        
+                        
+                    }else{
+                        print("sendDialogError!:")
+                        print(sendError.description)
+                    }
+                })
+            }
         }
 
     }
     
     func judgeStress() -> Bool{
-    var isStress:Bool = false
+    var isStress:Bool = true
         //ここでストレスがあるか判定
         return isStress
     }
@@ -181,7 +189,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 var hr = heartRateData.heartRate
                 var hrQuality = heartRateData.quality
                 let now = NSDate()
-                print("HRをupdate " + now.description)
                 print(hr)
                 weakSelf.HRtext.text = "HR : " + hr.description + ":" + now.description
                 do{
@@ -262,7 +269,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             print(error.description)
         }
         let startAccselector:Selector = #selector(ViewController.startAccelermaterUpdates)
-        print("selector前")
         self.performSelector(startAccselector, withObject: nil, afterDelay: 3)
     }
     
@@ -297,6 +303,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK:MSBClientManagerDelegate
     func clientManager(clientManager: MSBClientManager!, clientDidConnect client: MSBClient!) {
         print("client did connected!!")
+        print("notificationを送るよ")
+        self.sendNotificationToBand(self.client!)
+        
         //TODO: create the page on tile
         var tile:MSBTile = self.tileWithButtonLayout()!
         self.client?.tileManager.addTile(tile, completionHandler: {
