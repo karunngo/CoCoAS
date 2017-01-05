@@ -144,17 +144,21 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK: -
     //MARK:Notification manage
     func sendNotificationToBand(client:MSBClient){
-        
         if judgeStress() {
             var now = NSDate()
             var tileString = "Are You Stressed?"
             var bodyString = "Please labeled." //+ 現在時刻
             //TODO:通知する
-            //FIXME:weakにする？selfにした方がよい？
-            //client.notificationManager.showDialogWithTileID(tileID, title: tileString, body: bodyString, completionHandler:<#T##((NSError!) -> Void)!##((NSError!) -> Void)!##(NSError!) -> Void#>)
-            
-            //TODO:通知した時刻を保存
-            
+            client.notificationManager.showDialogWithTileID(TILEID, title: tileString, body: bodyString, completionHandler:{
+            (sendError) in
+                if(sendError != nil){
+                    print("Send dialog!")
+                    //TODO:通知した時刻を保存
+                }else{
+                    print("sendDialogError!:")
+                    print(sendError.description)
+                }
+            })
             //TODO:一度通知したらしばらく繰り返さない
         }
 
