@@ -14,6 +14,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     let TILEID:NSUUID = NSUUID.init(UUIDString: "CABDBA9F-12FD-47A5-8453-E7270A43BB98")!
     
     var doNotification:Bool = false;
+
+    //stress判定で使うために生体データの値をグローバルに
+    var hr:UInt? = nil;
     
     @IBOutlet weak var message: UILabel!
     @IBOutlet weak var HRtext: UILabel!
@@ -146,8 +149,8 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK: -
     //MARK:Notification manage
     func sendNotificationToBand(client:MSBClient){
-        print("Notification開始したよ！")
         while(self.doNotification){
+            print("judgeStress手前")
             if judgeStress() {
                 var now = NSDate()
                 var tileString = "Are You Stressed?"
@@ -168,13 +171,17 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                     }
                 })
             }
+            sleep(5)
         }
 
     }
     
     func judgeStress() -> Bool{
-    var isStress:Bool = true
+    var isStress:Bool = false
         //ここでストレスがあるか判定
+        if self.hr > 65{
+            isStress = true
+        }
         return isStress
     }
     
@@ -186,11 +193,11 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         let HRhandler = {[weak self](heartRateData:MSBSensorHeartRateData!,handlerror:NSError!) in
             //ここに中身を書く？
             if let weakSelf = self {
-                var hr = heartRateData.heartRate
+                self!.hr = heartRateData.heartRate
                 var hrQuality = heartRateData.quality
                 let now = NSDate()
-                print(hr)
-                weakSelf.HRtext.text = "HR : " + hr.description + ":" + now.description
+                print(heartRateData.heartRate.description)
+                weakSelf.HRtext.text = "HR : " + heartRateData.heartRate.description + ":" + now.description
                 do{
                     try weakSelf.client?.sensorManager.startHeartRateUpdatesToQueue(nil, withHandler: {
                         [weak self](HrData : MSBSensorHeartRateData!,hrError:NSError!)in})
@@ -303,9 +310,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK:MSBClientManagerDelegate
     func clientManager(clientManager: MSBClientManager!, clientDidConnect client: MSBClient!) {
         print("client did connected!!")
-        print("notificationを送るよ")
-        self.sendNotificationToBand(self.client!)
-        
         //TODO: create the page on tile
         var tile:MSBTile = self.tileWithButtonLayout()!
         self.client?.tileManager.addTile(tile, completionHandler: {
@@ -347,6 +351,10 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         self.startGSRUpdates()
         self.startAccelermaterUpdates()
         
+        /*//start sendNotification
+        self.doNotification = true;
+        self.sendNotificationToBand(self.client!)
+        */
     }
     
     func clientManager(clientManager: MSBClientManager!, clientDidDisconnect client: MSBClient!) {
