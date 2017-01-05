@@ -302,7 +302,19 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     
     func client(client: MSBClient!, buttonDidPress event: MSBTileButtonEvent!) {
         //Bandへの通知(取得できたよありがとう)
-        //ラベル・時刻を取得
+        print("pressed button!")
+        var tileString = "Thank you!"
+        var bodyString = "You labeled.Please go back." //+ 現在時刻
+        //TODO:通知する
+        client.notificationManager.showDialogWithTileID(TILEID, title: tileString, body: bodyString, completionHandler: {
+            (didPressError) in
+            if didPressError != nil{
+                print (didPressError.description)
+            }
+        })
+        //ラベルを取得
+        var nowButton:String = event.buttonId.description
+        print(nowButton)
         //DBに保存
         
     }
