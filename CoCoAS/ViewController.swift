@@ -7,9 +7,9 @@
 //
 
 import UIKit
+import CoreLocation
 
-
-class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDelegate{
+class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDelegate,CLLocationManagerDelegate{
     var client:MSBClient? = nil
     let TILEID:NSUUID = NSUUID.init(UUIDString: "CABDBA9F-12FD-47A5-8453-E7270A43BB98")!
     
@@ -17,6 +17,11 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
 
     //stress判定で使うために生体データの値をグローバルに
     var hr:UInt? = nil;
+    
+    //位置データ取得
+    var clmanager: CLLocationManager!
+    var latitude: CLLocationDegrees!
+    var longitude: CLLocationDegrees!
     
     @IBOutlet weak var message: UILabel!
     @IBOutlet weak var HRtext: UILabel!
@@ -27,14 +32,22 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     @IBOutlet weak var latitudeText: UILabel!
     @IBOutlet weak var longitudeText: UILabel!
     
-    //MARK: -
     
+    
+    //MARK: -
     override func viewDidLoad() {
         super.viewDidLoad()
         self.message.text="CoCoASにようこそ!"
         //TODO:set CoreDataManager
         
-        //test
+        //TODO:start get locations
+        clmanager = CLLocationManager()
+        longitude = CLLocationDegrees()
+        latitude = CLLocationDegrees()
+        clmanager.delegate = self
+        clmanager.requestAlwaysAuthorization()
+        clmanager.startUpdatingLocation()
+        print("位置情報取得開始！")
     
         //connect Band
         MSBClientManager.sharedManager().delegate=self
@@ -51,11 +64,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         self.message.text="Please wait. Connecting to Band "
         
         //TODO:start get lifelogs
-        
-        
-        
-        
-        
         
     }
 
@@ -285,6 +293,21 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         self.accXtext.text = "try again..."
         self.startAccelermaterUpdates()
     }
+    
+    //locationdata
+    func locationManager(manager: CLLocationManager, didUpdateToLocation newLocation: CLLocation, fromLocation oldLocation: CLLocation){
+        latitude = newLocation.coordinate.latitude
+        longitude = newLocation.coordinate.longitude
+        print("latiitude:" + latitude.description + "longitude:" + longitude.description)
+        self.latitudeText.text = "latitude : " + latitude.description
+        self.longitudeText.text = "longitude : " + longitude.description
+    }
+    
+    func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
+        print("位置情報取得Error!")
+    }
+    
+    //MARK: -
     //MARK:MSBClientManagerDelegate
     func clientManager(clientManager: MSBClientManager!, clientDidConnect client: MSBClient!) {
         print("client did connected!!")
@@ -377,6 +400,8 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         var nowButton:String = event.buttonId.description
         print(nowButton)
         //DBに保存
+        }
+        
         
     }
     
@@ -385,5 +410,5 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     
     
 
-}
+
 

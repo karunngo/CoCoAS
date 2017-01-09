@@ -7,21 +7,27 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		444FA0F91E23424C00AA9A9C /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 444FA0F81E23424C00AA9A9C /* CoreLocation.framework */; };
+		44B580FB1E18C64D00E4CE4F /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 44B580FA1E18C64D00E4CE4F /* CoreBluetooth.framework */; };
+		44B580FE1E19567F00E4CE4F /* Stress.png in Resources */ = {isa = PBXBuildFile; fileRef = 44B580FC1E19567F00E4CE4F /* Stress.png */; };
+		44B580FF1E19567F00E4CE4F /* StressS.png in Resources */ = {isa = PBXBuildFile; fileRef = 44B580FD1E19567F00E4CE4F /* StressS.png */; };
 		44E38F021E176F9400C19407 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44E38F011E176F9400C19407 /* AppDelegate.swift */; };
 		44E38F041E176F9400C19407 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44E38F031E176F9400C19407 /* ViewController.swift */; };
 		44E38F071E176F9400C19407 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 44E38F051E176F9400C19407 /* Main.storyboard */; };
-		44E38F0A1E176F9400C19407 /* CoCoAS.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 44E38F081E176F9400C19407 /* CoCoAS.xcdatamodeld */; };
 		44E38F0C1E176F9400C19407 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 44E38F0B1E176F9400C19407 /* Assets.xcassets */; };
 		44E38F0F1E176F9400C19407 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 44E38F0D1E176F9400C19407 /* LaunchScreen.storyboard */; };
 		44E38F1A1E17724600C19407 /* MicrosoftBandKit_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 44E38F191E17724600C19407 /* MicrosoftBandKit_iOS.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		444FA0F81E23424C00AA9A9C /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
+		44B580FA1E18C64D00E4CE4F /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CoreBluetooth.framework; sourceTree = "<group>"; };
+		44B580FC1E19567F00E4CE4F /* Stress.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Stress.png; sourceTree = "<group>"; };
+		44B580FD1E19567F00E4CE4F /* StressS.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StressS.png; sourceTree = "<group>"; };
 		44E38EFE1E176F9400C19407 /* CoCoAS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CoCoAS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		44E38F011E176F9400C19407 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		44E38F031E176F9400C19407 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		44E38F061E176F9400C19407 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		44E38F091E176F9400C19407 /* CoCoAS.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = CoCoAS.xcdatamodel; sourceTree = "<group>"; };
 		44E38F0B1E176F9400C19407 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		44E38F0E1E176F9400C19407 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		44E38F101E176F9400C19407 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -34,6 +40,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				444FA0F91E23424C00AA9A9C /* CoreLocation.framework in Frameworks */,
+				44B580FB1E18C64D00E4CE4F /* CoreBluetooth.framework in Frameworks */,
 				44E38F1A1E17724600C19407 /* MicrosoftBandKit_iOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -41,11 +49,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		444FA0F71E23424C00AA9A9C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				444FA0F81E23424C00AA9A9C /* CoreLocation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		44E38EF51E176F9400C19407 = {
 			isa = PBXGroup;
 			children = (
 				44E38F001E176F9400C19407 /* CoCoAS */,
 				44E38EFF1E176F9400C19407 /* Products */,
+				444FA0F71E23424C00AA9A9C /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -66,7 +83,9 @@
 				44E38F0B1E176F9400C19407 /* Assets.xcassets */,
 				44E38F0D1E176F9400C19407 /* LaunchScreen.storyboard */,
 				44E38F101E176F9400C19407 /* Info.plist */,
-				44E38F081E176F9400C19407 /* CoCoAS.xcdatamodeld */,
+				44B580FC1E19567F00E4CE4F /* Stress.png */,
+				44B580FD1E19567F00E4CE4F /* StressS.png */,
+				44B580FA1E18C64D00E4CE4F /* CoreBluetooth.framework */,
 				44E38F191E17724600C19407 /* MicrosoftBandKit_iOS.framework */,
 				44E38F181E17707D00C19407 /* objc-Header.h */,
 			);
@@ -107,6 +126,11 @@
 						CreatedOnToolsVersion = 8.2.1;
 						DevelopmentTeam = RHNH48U726;
 						ProvisioningStyle = Automatic;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
@@ -134,8 +158,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				44E38F0F1E176F9400C19407 /* LaunchScreen.storyboard in Resources */,
+				44B580FE1E19567F00E4CE4F /* Stress.png in Resources */,
 				44E38F0C1E176F9400C19407 /* Assets.xcassets in Resources */,
 				44E38F071E176F9400C19407 /* Main.storyboard in Resources */,
+				44B580FF1E19567F00E4CE4F /* StressS.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,7 +174,6 @@
 			files = (
 				44E38F041E176F9400C19407 /* ViewController.swift in Sources */,
 				44E38F021E176F9400C19407 /* AppDelegate.swift in Sources */,
-				44E38F0A1E176F9400C19407 /* CoCoAS.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -323,19 +348,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCVersionGroup section */
-		44E38F081E176F9400C19407 /* CoCoAS.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				44E38F091E176F9400C19407 /* CoCoAS.xcdatamodel */,
-			);
-			currentVersion = 44E38F091E176F9400C19407 /* CoCoAS.xcdatamodel */;
-			path = CoCoAS.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = 44E38EF61E176F9400C19407 /* Project object */;
 }
