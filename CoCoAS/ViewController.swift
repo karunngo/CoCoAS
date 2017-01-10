@@ -38,6 +38,8 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK: -
     override func viewDidLoad() {
         super.viewDidLoad()
+        //realmを一旦削除
+        
         self.message.text="CoCoASにようこそ!"
         //TODO:set CoreDataManager
         
@@ -143,8 +145,22 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     
     //MARK:-
     //MARK: Helper methods
-    func seveCoreData(){
-        
+    //realmのデータを全削除。(デバック用)
+    func resetRealm(){
+        let realmURL = Realm.Configuration.defaultConfiguration.fileURL!
+        let realmURLs = [
+            realmURL,
+            realmURL.URLByAppendingPathExtension("lock"),
+            ]
+        print(realmURLs)
+        let manager = NSFileManager.defaultManager()
+        for URL in realmURLs {
+            do {
+                try manager.removeItemAtURL(URL!)
+            } catch {
+                print("エラー！消されてないよ")
+            }
+        }
     }
     
     
