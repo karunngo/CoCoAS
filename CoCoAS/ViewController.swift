@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreLocation
+import RealmSwift
 
 class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDelegate,CLLocationManagerDelegate{
     var client:MSBClient? = nil
@@ -395,9 +396,21 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     func client(client: MSBClient!, buttonDidPress event: MSBTileButtonEvent!) {
         //Bandへの通知(取得できたよありがとう)
         print("pressed button!")
+        //保存
+        let now = NSData()
+        let labelData = RealmLabel()
+        labelData.date = now
+        labelData.name = "test"
+        let realm = try! Realm()
+        try! realm.write {
+            realm.add(labelData)
+        }
+        //今までのデータを列挙
+        let labels = realm.objects(RealmLabel)
+        print(labels)
+        //通知
         var tileString = "Thank you!"
         var bodyString = "You labeled.Please go back." //+ 現在時刻
-        //TODO:通知する
         client.notificationManager.showDialogWithTileID(TILEID, title: tileString, body: bodyString, completionHandler: {
             (didPressError) in
             if didPressError != nil{
