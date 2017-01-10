@@ -68,10 +68,6 @@ class TransactLogValidationMixin {
     // Index of currently selected table
     size_t m_current_table = 0;
 
-    // Tables which were created during the transaction being processed, which
-    // can have columns inserted without a schema version bump
-    std::vector<size_t> m_new_tables;
-
     REALM_NORETURN
     REALM_NOINLINE
     void schema_error()
@@ -79,57 +75,10 @@ class TransactLogValidationMixin {
         throw std::logic_error("Schema mismatch detected: another process has modified the Realm file's schema in an incompatible way");
     }
 
-    // Throw an exception if the currently modified table already existed before
-    // the current set of modifications
-    bool schema_error_unless_new_table()
-    {
-        if (schema_mode == SchemaMode::Additive) {
-            return true;
-        }
-        if (std::find(begin(m_new_tables), end(m_new_tables), m_current_table) != end(m_new_tables)) {
-            return true;
-        }
-        schema_error();
-    }
-
 protected:
     size_t current_table() const noexcept { return m_current_table; }
 
 public:
-    SchemaMode schema_mode;
-
-    // Schema changes which don't involve a change in the schema version are
-    // allowed
-    bool add_search_index(size_t) { return true; }
-    bool remove_search_index(size_t) { return true; }
-
-    // Creating entirely new tables without a schema version bump is allowed, so
-    // we need to track if new columns are being added to a new table or an
-    // existing one
-    bool insert_group_level_table(size_t table_ndx, size_t, StringData)
-    {
-        // Shift any previously added tables after the new one
-        for (auto& table : m_new_tables) {
-            if (table >= table_ndx)
-                ++table;
-        }
-        m_new_tables.push_back(table_ndx);
-        m_current_table = table_ndx;
-        return true;
-    }
-    bool insert_column(size_t, DataType, StringData, bool) { return schema_error_unless_new_table(); }
-    bool insert_link_column(size_t, DataType, StringData, size_t, size_t) { return schema_error_unless_new_table(); }
-    bool set_link_type(size_t, LinkType) { return schema_error_unless_new_table(); }
-    bool move_column(size_t, size_t) { return schema_error_unless_new_table(); }
-    bool move_group_level_table(size_t, size_t) { return schema_error_unless_new_table(); }
-
-    // Removing or renaming things while a Realm is open is never supported
-    bool erase_group_level_table(size_t, size_t) { schema_error(); }
-    bool rename_group_level_table(size_t, StringData) { schema_error(); }
-    bool erase_column(size_t) { schema_error(); }
-    bool erase_link_column(size_t, size_t, size_t) { schema_error(); }
-    bool rename_column(size_t, StringData) { schema_error(); }
-
     bool select_descriptor(int levels, const size_t*)
     {
         // subtables not supported
@@ -142,10 +91,29 @@ public:
         return true;
     }
 
-    bool select_link_list(size_t, size_t, size_t) { return true; }
+    // Removing or renaming things while a Realm is open is never supported
+    bool erase_group_level_table(size_t, size_t) { schema_error(); }
+    bool rename_group_level_table(size_t, StringData) { schema_error(); }
+    bool erase_column(size_t) { schema_error(); }
+    bool erase_link_column(size_t, size_t, size_t) { schema_error(); }
+    bool rename_column(size_t, StringData) { schema_error(); }
+
+    // Schema changes which don't involve a change in the schema version are
+    // allowed
+    bool add_search_index(size_t) { return true; }
+    bool remove_search_index(size_t) { return true; }
+
+    // Additive changes and reorderings are supported
+    bool insert_group_level_table(size_t, size_t, StringData) { return true; }
+    bool insert_column(size_t, DataType, StringData, bool) { return true; }
+    bool insert_link_column(size_t, DataType, StringData, size_t, size_t) { return true; }
+    bool set_link_type(size_t, LinkType) { return true; }
+    bool move_column(size_t, size_t) { return true; }
+    bool move_group_level_table(size_t, size_t) { return true; }
 
     // Non-schema changes are all allowed
     void parse_complete() { }
+    bool select_link_list(size_t, size_t, size_t) { return true; }
     bool insert_empty_rows(size_t, size_t, size_t, bool) { return true; }
     bool erase_rows(size_t, size_t, size_t, bool) { return true; }
     bool swap_rows(size_t, size_t) { return true; }
@@ -159,14 +127,12 @@ public:
     bool link_list_swap(size_t, size_t) { return true; }
     bool merge_rows(size_t, size_t) { return true; }
     bool optimize_table() { return true; }
-
 };
 
 
 // A transaction log handler that just validates that all operations made are
 // ones supported by the object store
 struct TransactLogValidator : public TransactLogValidationMixin, public MarkDirtyMixin<TransactLogValidator> {
-    TransactLogValidator(SchemaMode schema_mode) { this->schema_mode = schema_mode; }
     void mark_dirty(size_t, size_t) { }
 };
 
@@ -181,7 +147,7 @@ void rotate(Container& container, size_t from, size_t to)
     if (from >= container.size() || to >= container.size())
         container.resize(std::max(from, to) + 1);
     if (from < to)
-        std::rotate(begin(container) + from, begin(container) + to, begin(container) + to + 1);
+        std::rotate(begin(container) + from, begin(container) + from + 1, begin(container) + to + 1);
     else
         std::rotate(begin(container) + to, begin(container) + from, begin(container) + from + 1);
 }
@@ -199,7 +165,7 @@ void adjust_for_move(size_t& value, size_t from, size_t to)
 {
     if (value == from)
         value = to;
-    else if (value > from && value < to)
+    else if (value > from && value <= to)
         --value;
     else if (value < from && value >= to)
         ++value;
@@ -220,6 +186,9 @@ class TransactLogObserver : public TransactLogValidationMixin, public MarkDirtyM
 
     // Change information for the currently selected LinkList, if any
     ColumnInfo* m_active_linklist = nullptr;
+
+    _impl::NotifierPackage& m_notifiers;
+    SharedGroup& m_sg;
 
     // Get the change info for the given column, creating it if needed
     static ColumnInfo& get_change(ObserverState& state, size_t i)
@@ -250,29 +219,41 @@ class TransactLogObserver : public TransactLogValidationMixin, public MarkDirtyM
 
 public:
     template<typename Func>
-    TransactLogObserver(BindingContext* context, SharedGroup& sg, Func&& func, util::Optional<SchemaMode> schema_mode)
+    TransactLogObserver(BindingContext* context, SharedGroup& sg, Func&& func,
+                        _impl::NotifierPackage& notifiers, bool validate=true)
     : m_context(context)
+    , m_notifiers(notifiers)
+    , m_sg(sg)
     {
         auto old_version = sg.get_version_of_current_transaction();
         if (context) {
             m_observers = context->get_observed_rows();
         }
-        if (m_observers.empty()) {
-            if (schema_mode) {
-                func(TransactLogValidator(*schema_mode));
-            }
-            else {
+
+        // If we have collection notifiers we have to use the transaction log
+        // observer to send will_change notifications once we know what the
+        // target version is, despite not otherwise needing to observe anything
+        if (m_observers.empty() && (!m_notifiers || m_notifiers.version())) {
+            m_notifiers.before_advance();
+            if (validate)
+                func(TransactLogValidator());
+            else
                 func();
-            }
             if (context && old_version != sg.get_version_of_current_transaction()) {
                 context->did_change({}, {});
             }
+            m_notifiers.deliver(sg);
+            m_notifiers.after_advance();
             return;
         }
 
         std::sort(begin(m_observers), end(m_observers));
         func(*this);
-        context->did_change(m_observers, invalidated);
+        if (context)
+            context->did_change(m_observers, invalidated, old_version != sg.get_version_of_current_transaction());
+        m_notifiers.package_and_wait(sg.get_version_of_current_transaction().version); // is a no-op if parse_complete() was called
+        m_notifiers.deliver(sg); // only will ever deliver errors
+        m_notifiers.after_advance();
     }
 
     // Mark the given row/col as needing notifications sent
@@ -288,7 +269,11 @@ public:
     // is advanced
     void parse_complete()
     {
-        m_context->will_change(m_observers, invalidated);
+        if (m_context)
+            m_context->will_change(m_observers, invalidated);
+        using sgf = _impl::SharedGroupFriend;
+        m_notifiers.package_and_wait(sgf::get_version_of_latest_snapshot(m_sg));
+        m_notifiers.before_advance();
     }
 
     bool insert_group_level_table(size_t table_ndx, size_t prior_size, StringData name)
@@ -792,12 +777,21 @@ public:
 
 namespace realm {
 namespace _impl {
+
 namespace transaction {
-void advance(SharedGroup& sg, BindingContext* context, SchemaMode schema_mode, VersionID version)
+void advance(SharedGroup& sg, BindingContext* context, VersionID version)
 {
+    _impl::NotifierPackage notifiers;
     TransactLogObserver(context, sg, [&](auto&&... args) {
         LangBindHelper::advance_read(sg, std::move(args)..., version);
-    }, schema_mode);
+    }, notifiers);
+}
+
+void advance(SharedGroup& sg, BindingContext* context, NotifierPackage& notifiers)
+{
+    TransactLogObserver(context, sg, [&](auto&&... args) {
+        LangBindHelper::advance_read(sg, std::move(args)..., notifiers.version().value_or(VersionID{}));
+    }, notifiers);
 }
 
 void begin_without_validation(SharedGroup& sg)
@@ -805,32 +799,27 @@ void begin_without_validation(SharedGroup& sg)
     LangBindHelper::promote_to_write(sg);
 }
 
-void begin(SharedGroup& sg, BindingContext* context, SchemaMode schema_mode)
+void begin(SharedGroup& sg, BindingContext* context, NotifierPackage& notifiers)
 {
     TransactLogObserver(context, sg, [&](auto&&... args) {
         LangBindHelper::promote_to_write(sg, std::move(args)...);
-    }, schema_mode);
+    }, notifiers);
 }
 
-void commit(SharedGroup& sg, BindingContext* context)
+void commit(SharedGroup& sg)
 {
     LangBindHelper::commit_and_continue_as_read(sg);
-
-    if (context) {
-        context->did_change({}, {});
-    }
 }
 
 void cancel(SharedGroup& sg, BindingContext* context)
 {
+    _impl::NotifierPackage notifiers;
     TransactLogObserver(context, sg, [&](auto&&... args) {
         LangBindHelper::rollback_and_continue_as_read(sg, std::move(args)...);
-    }, util::none);
+    }, notifiers, false);
 }
 
-void advance(SharedGroup& sg,
-             TransactionChangeInfo& info,
-             VersionID version)
+void advance(SharedGroup& sg, TransactionChangeInfo& info, VersionID version)
 {
     if (!info.track_all && info.table_modifications_needed.empty() && info.lists.empty()) {
         LangBindHelper::advance_read(sg, version);

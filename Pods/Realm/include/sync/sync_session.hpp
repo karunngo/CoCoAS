@@ -52,13 +52,28 @@ using SyncSessionTransactCallback = void(VersionID old_version, VersionID new_ve
 
 class SyncSession : public std::enable_shared_from_this<SyncSession> {
 public:
-    bool is_valid() const;
-    bool is_inactive() const;
+    enum class PublicState {
+        WaitingForAccessToken,
+        Active,
+        Dying,
+        Inactive,
+        Error,
+    };
+    PublicState state() const;
+
+    bool is_in_error_state() const {
+        return state() == PublicState::Error;
+    }
 
     std::string const& path() const { return m_realm_path; }
 
-    void wait_for_upload_completion(std::function<void()> callback);
-    void wait_for_download_completion(std::function<void()> callback);
+    bool wait_for_upload_completion(std::function<void(std::error_code)> callback);
+    bool wait_for_download_completion(std::function<void(std::error_code)> callback);
+
+    // Wait for any pending uploads to complete, blocking the calling thread.
+    // Returns `false` if the method did not attempt to wait, either because the
+    // session is in an error state or because it hasn't yet been `bind()`ed.
+    bool wait_for_upload_completion_blocking();
 
     // If the sync session is currently `Dying`, ask it to stay alive instead.
     // If the sync session is currently `Inactive`, recreate it. Otherwise, a no-op.
@@ -123,7 +138,7 @@ private:
 
     friend class realm::SyncManager;
     // Called by SyncManager {
-    SyncSession(std::shared_ptr<_impl::SyncClient>, std::string realm_path, SyncConfig);
+    SyncSession(_impl::SyncClient&, std::string realm_path, SyncConfig);
     // }
 
     bool can_wait_for_network_completion() const;
@@ -143,12 +158,12 @@ private:
     mutable std::mutex m_state_mutex;
 
     const State* m_state = nullptr;
-    size_t m_pending_upload_threads = 0;
+    size_t m_death_count = 0;
 
     SyncConfig m_config;
 
     std::string m_realm_path;
-    std::shared_ptr<_impl::SyncClient> m_client;
+    _impl::SyncClient& m_client;
     std::unique_ptr<sync::Session> m_session;
     util::Optional<int_fast64_t> m_deferred_commit_notification;
     bool m_deferred_close = false;

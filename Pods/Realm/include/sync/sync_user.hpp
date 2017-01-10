@@ -51,10 +51,14 @@ public:
     // Return a list of all sessions belonging to this user.
     std::vector<std::shared_ptr<SyncSession>> all_sessions();
 
-    // Return a session for a given URL.
-    std::shared_ptr<SyncSession> session_for_url(const std::string& url);
+    // Return a session for a given on disk path.
+    // In most cases, bindings shouldn't expose this to consumers, since the on-disk
+    // path for a synced Realm is an opaque implementation detail. This API is retained
+    // for testing purposes, and for bindings for consumers that are servers or tools.
+    std::shared_ptr<SyncSession> session_for_on_disk_path(const std::string& path);
 
     // Update the user's refresh token. If the user is logged out, it will log itself back in.
+    // Note that this is called by the SyncManager, and should not be directly called.
     void update_refresh_token(std::string token);
 
     // Log the user out and mark it as such. This will also close its associated Sessions.
@@ -84,6 +88,7 @@ public:
     // Register a session to this user.
     // A registered session will be bound at the earliest opportunity: either
     // immediately, or upon the user becoming Active.
+    // Note that this is called by the SyncManager, and should not be directly called.
     void register_session(std::shared_ptr<SyncSession> session);
 
 private:

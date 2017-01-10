@@ -157,7 +157,7 @@ public struct SyncCredentials {
         self.userInfo = userInfo
     }
 
-    private init(_ credentials: RLMSyncCredentials) {
+    internal init(_ credentials: RLMSyncCredentials) {
         self.token = credentials.token
         self.provider = credentials.provider
         self.userInfo = credentials.userInfo
@@ -173,9 +173,9 @@ public struct SyncCredentials {
         return SyncCredentials(RLMSyncCredentials(googleToken: token))
     }
 
-    /// Initialize new credentials using an iCloud account token.
-    public static func iCloud(token: Token) -> SyncCredentials {
-        return SyncCredentials(RLMSyncCredentials(iCloudToken: token))
+    /// Initialize new credentials using a CloudKit account token.
+    public static func cloudKit(token: Token) -> SyncCredentials {
+        return SyncCredentials(RLMSyncCredentials(cloudKitToken: token))
     }
 
     /// Initialize new credentials using a Realm Object Server username and password.
@@ -192,7 +192,7 @@ public struct SyncCredentials {
 }
 
 extension RLMSyncCredentials {
-    fileprivate convenience init(_ credentials: SyncCredentials) {
+    internal convenience init(_ credentials: SyncCredentials) {
         self.init(customToken: credentials.token, provider: credentials.provider, userInfo: credentials.userInfo)
     }
 }
@@ -231,7 +231,7 @@ extension SyncUser {
      This includes granting other users access to Realms.
      */
     public func managementRealm() throws -> Realm {
-        var config = Realm.Configuration.fromRLMRealmConfiguration(rlmConfiguration: .managementConfiguration(for: self))
+        var config = Realm.Configuration.fromRLMRealmConfiguration(.managementConfiguration(for: self))
         config.objectTypes = [SyncPermissionChange.self]
         return try Realm(configuration: config)
     }
@@ -383,7 +383,7 @@ public struct SyncCredentials {
         self.userInfo = userInfo
     }
 
-    private init(_ credentials: RLMSyncCredentials) {
+    internal init(_ credentials: RLMSyncCredentials) {
         self.token = credentials.token
         self.provider = credentials.provider
         self.userInfo = credentials.userInfo
@@ -399,9 +399,9 @@ public struct SyncCredentials {
         return SyncCredentials(RLMSyncCredentials(googleToken: token))
     }
 
-    /// Initialize new credentials using an iCloud account token.
-    public static func iCloud(token: Token) -> SyncCredentials {
-        return SyncCredentials(RLMSyncCredentials(ICloudToken: token))
+    /// Initialize new credentials using a CloudKit account token.
+    public static func cloudKit(token: Token) -> SyncCredentials {
+        return SyncCredentials(RLMSyncCredentials(cloudKitToken: token))
     }
 
     /// Initialize new credentials using a Realm Object Server username and password.
@@ -418,7 +418,7 @@ public struct SyncCredentials {
 }
 
 extension RLMSyncCredentials {
-    private convenience init(_ credentials: SyncCredentials) {
+    internal convenience init(_ credentials: SyncCredentials) {
         self.init(customToken: credentials.token, provider: credentials.provider, userInfo: credentials.userInfo)
     }
 }
