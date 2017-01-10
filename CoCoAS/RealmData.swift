@@ -9,7 +9,7 @@
 import RealmSwift
 
 class RealmLabel: Object {
-    dynamic var date:NSData? = nil
+    dynamic var date:NSDate? = nil
     dynamic var name:String = ""
 }
 

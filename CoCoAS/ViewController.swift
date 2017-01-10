@@ -397,7 +397,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         //Bandへの通知(取得できたよありがとう)
         print("pressed button!")
         //保存
-        let now = NSData()
+        let now = NSDate()
         let labelData = RealmLabel()
         labelData.date = now
         labelData.name = "test"
