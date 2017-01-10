@@ -63,8 +63,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         MSBClientManager.sharedManager().connectClient(self.client)
         self.message.text="Please wait. Connecting to Band "
         
-        //TODO:start get lifelogs
-        
     }
 
     override func didReceiveMemoryWarning() {
@@ -197,7 +195,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //HR
     func startHeartRateUpdates(client:MSBClient){
         let HRhandler = {[weak self](heartRateData:MSBSensorHeartRateData!,handlerror:NSError!) in
-            //ここに中身を書く？
             if let weakSelf = self {
                 self!.hr = heartRateData.heartRate
                 var hrQuality = heartRateData.quality
@@ -221,7 +218,15 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             print(error.description)
         }
         let startHRselector:Selector = #selector(ViewController.startHeartRateUpdates)
-        self.performSelector(startHRselector, withObject: nil, afterDelay: 5)
+        //self.performSelector(startHRselector, withObject: nil, afterDelay: 5)
+        NSTimer.scheduledTimerWithTimeInterval(5,target: self,selector: startHRselector,userInfo: nil,repeats: true)
+        
+        
+        
+        
+        
+        
+        
         //UIBackgroundTaskIdentifierを使ってみよっと。Timerじゃダメだった
         
     }
@@ -298,7 +303,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     func locationManager(manager: CLLocationManager, didUpdateToLocation newLocation: CLLocation, fromLocation oldLocation: CLLocation){
         latitude = newLocation.coordinate.latitude
         longitude = newLocation.coordinate.longitude
-        print("latiitude:" + latitude.description + "longitude:" + longitude.description)
+        //print("latitude:" + latitude.description + "longitude:" + longitude.description)
         self.latitudeText.text = "latitude : " + latitude.description
         self.longitudeText.text = "longitude : " + longitude.description
     }
@@ -343,6 +348,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
          {[weak self](userConsent:Bool,err:NSError!) -> Void in
          if let weakSelf = self {
          if(userConsent){
+/*            let startHRselector:Selector = #selector(ViewController.startHeartRateUpdates)
+            NSTimer.scheduledTimerWithTimeInterval(5,target: weakSelf,selector: startHRselector,userInfo: weakSelf.client!,repeats: true)
+*/
          weakSelf.startHeartRateUpdates(weakSelf.client!)
          }else{
          weakSelf.HRtext.text = "User consent declined";
