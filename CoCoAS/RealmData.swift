@@ -23,3 +23,11 @@ class RealmGSR: Object {
     dynamic var date:NSDate? = nil
     dynamic var gsr:Int = 0
 }
+
+class RealmAcc: Object {
+    dynamic var date:NSDate? = nil
+    dynamic var x:Double = 0.0
+    dynamic var y:Double = 0.0
+    dynamic var z:Double = 0.0
+    dynamic var synthesized:Double = 0.0
+}

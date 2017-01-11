@@ -317,17 +317,34 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //TODO:加速度の追加
     func startAccelermaterUpdates(){
         let Acchandler = {[weak self](accData:MSBSensorAccelerometerData!,accError:NSError!)in
+
+            let accX = accData.x
+            let accY = accData.y
+            let accZ = accData.z
+            let accS = sqrt(accX*accX + accY*accY + accZ*accZ)
+            let now = NSDate()
+            
             if let weakSelf = self {
-                var accX = accData.x
-                var accY = accData.y
-                var accZ = accData.z
-                var accS = sqrt(accX*accX + accY*accY + accZ*accZ)
-                let now = NSData()
                 weakSelf.accXtext.text = "AccX : " + accX.description
                 weakSelf.accYtext.text = "AccY : " + accY.description
                 weakSelf.accZtext.text = "AccZ : " + accZ.description
-                
             }
+            
+            //GSRの永続化
+            let realmAcc = RealmAcc()
+            realmAcc.date = now
+            realmAcc.x = accX
+            realmAcc.y = accY
+            realmAcc.z = accZ
+            realmAcc.synthesized = accS
+            let realm = try! Realm()
+            try! realm.write {
+                realm.add(realmAcc)
+            }
+            //保存できたか確認
+            let accs = realm.objects(RealmAcc)
+            print(accs)
+            
         }
         do{
             try self.client?.sensorManager.startAccelerometerUpdatesToQueue(nil, withHandler: Acchandler)
