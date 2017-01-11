@@ -12,16 +12,16 @@ import RealmSwift
 
 class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDelegate,CLLocationManagerDelegate{
     var client:MSBClient? = nil
+    
+    //Tileのレイアウト
     let TILEID:NSUUID = NSUUID.init(UUIDString: "CABDBA9F-12FD-47A5-8453-E7270A43BB98")!
     let YESNum:UInt16 = 11
     let NoNum:UInt16 = 12
     
     //通知判定
     var doNotification:Bool = false;
-    
-    //
 
-    //stress判定で使うために生体データの値をグローバルに
+    //stress判定
     var hr:Int = 0;
     
     //位置データ取得
@@ -29,6 +29,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     var latitude: CLLocationDegrees!
     var longitude: CLLocationDegrees!
     
+    //View
     @IBOutlet weak var message: UILabel!
     @IBOutlet weak var HRtext: UILabel!
     @IBOutlet weak var GSRtext: UILabel!
@@ -45,16 +46,15 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         super.viewDidLoad()
         self.message.text="CoCoASにようこそ!"
         
-        //start get locations
+        //位置情報の取得開始
         clmanager = CLLocationManager()
         longitude = CLLocationDegrees()
         latitude = CLLocationDegrees()
         clmanager.delegate = self
         clmanager.requestAlwaysAuthorization()
         clmanager.startUpdatingLocation()
-        print("位置情報取得開始！")
-    
-        //connect Band
+        
+        //MSBandに接続　→　接続後はMSBClientManagerDelegateが作動
         MSBClientManager.sharedManager().delegate=self
         let clients:NSArray = MSBClientManager.sharedManager().attachedClients()
         if clients.firstObject == nil{
@@ -75,6 +75,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         // Dispose of any resources that can be recreated.
     }
     
+    //MSBandのタイルのレイアウトを定義
     func tileWithButtonLayout()->MSBTile?{
         let tileName:String = "CoCoAS tile"
         var tile:MSBTile? = nil
@@ -86,7 +87,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         }catch{
         }
         
-        //create a textBox
+        //テキストボックス
         let textBlock = MSBPageTextBlock.init(rect: MSBPageRect.init(x: 0, y: 0, width: 200, height: 400), font: MSBPageTextBlockFont.Small)
         textBlock.elementId = 10
         textBlock.baseline = 25
@@ -95,7 +96,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         textBlock.autoWidth = false
         textBlock.margins = MSBPageMargins.init(left: 5, top: 2, right: 5, bottom: 2)
         
-        //create a TextButton
+        //テキストボタン
         let buttonYes = MSBPageTextButton.init(rect: MSBPageRect.init(x: 0, y: 0, width: 100, height: 40))
         buttonYes.elementId = self.YESNum
         buttonYes.horizontalAlignment = MSBPageHorizontalAlignment.Center
@@ -112,7 +113,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         }catch{
         print("buttonの色かわらず！")}
         
-        //set on panel
+        //配置
         let flowPanelText = MSBPageFlowPanel.init(rect: MSBPageRect.init(x: 15, y: 0, width: 230, height: 50))
         let flowPanelButton = MSBPageFlowPanel.init(rect: MSBPageRect.init(x: 15, y: 0, width: 230, height: 50))
         flowPanelText.addElement(textBlock)
@@ -129,6 +130,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         return tile
     }
 
+    //レイアウトの中身も入ったPageLayoutを返す
     func buttonPage()->[AnyObject]{
         let pageID:NSUUID = NSUUID.init(UUIDString:  "1234BA9F-12FD-47A5-83A9-E7270A43BB99")!
         var pageValue:[AnyObject]? = nil
@@ -140,14 +142,22 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         }
         let pageData = MSBPageData.init(id: pageID, layoutIndex: 0, value: pageValue)
         let pageDatas:[AnyObject] = [pageData!]
-        print("pageDatesを返すよ：")
         return pageDatas
     }
 
     
     //MARK:-
     //MARK: Helper methods
-    //realmのデータを全削除。(デバック用)
+    //HRQualityをStringで返す
+    func qualityToString(hrData:MSBSensorHeartRateData!)->String{
+        switch hrData.quality {
+        case MSBSensorHeartRateQuality.Acquiring:
+            return "Acquiring"
+        case MSBSensorHeartRateQuality.Locked:
+            return "Locked"
+        }
+    }
+    //realmのデータを全削除(デバック用)
     func resetRealm(){
         let realmURL = Realm.Configuration.defaultConfiguration.fileURL!
         let realmURLs = [
@@ -164,25 +174,11 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             }
         }
     }
-    //HRQualityをStringで返す
-    func qualityToString(hrData:MSBSensorHeartRateData!)->String{
-        switch hrData.quality {
-        case MSBSensorHeartRateQuality.Acquiring:
-            return "Acquiring"
-        case MSBSensorHeartRateQuality.Locked:
-            return "Locked"
-        }
-    }
-    
-    
-    
-    
 
     //MARK: -
     //MARK:Notification manage
     func sendNotificationToBand(client:MSBClient){
         while(self.doNotification){
-            print("judgeStress手前")
             if judgeStress() {
                 var now = NSDate()
                 var tileString = "Are You Stressed?"
@@ -191,14 +187,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 client.notificationManager.showDialogWithTileID(TILEID, title: tileString, body: bodyString, completionHandler:{
                     (sendError) in
                     if(sendError != nil){
-                        print("Send dialog!")
                         //TODO:通知した時刻を保存
                         self.doNotification = false
-                        //5分止める
-                        
-                        
                     }else{
-                        print("sendDialogError!:")
                         print(sendError.description)
                     }
                 })
@@ -208,9 +199,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
 
     }
     
+    //ストレスがあるかの判定
     func judgeStress() -> Bool{
     var isStress:Bool = false
-        //ここでストレスがあるか判定
         if self.hr > 65{
             isStress = true
         }
@@ -289,10 +280,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 try! realm.write {
                     realm.add(realmGSR)
                 }
-                //保存できたか確認
-                let gsrs = realm.objects(RealmGSR)
-                print(gsrs)
-
             }
             
         }
@@ -314,7 +301,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         self.GSRtext.text="try again..."
         self.startGSRUpdates()
     }
-    //TODO:加速度の追加
+    
     func startAccelermaterUpdates(){
         let Acchandler = {[weak self](accData:MSBSensorAccelerometerData!,accError:NSError!)in
 
@@ -341,11 +328,8 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             try! realm.write {
                 realm.add(realmAcc)
             }
-            //保存できたか確認
-            let accs = realm.objects(RealmAcc)
-            print(accs)
-            
         }
+        
         do{
             try self.client?.sensorManager.startAccelerometerUpdatesToQueue(nil, withHandler: Acchandler)
         }catch let error as NSError{
@@ -369,11 +353,10 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         latitude = newLocation.coordinate.latitude
         longitude = newLocation.coordinate.longitude
         let now = NSDate()
-        //print("latitude:" + latitude.description + "longitude:" + longitude.description)
         self.latitudeText.text = "latitude : " + latitude.description
         self.longitudeText.text = "longitude : " + longitude.description
         
-        //保存
+        //Locationの永続化
         let realmLocation = RealmLocation()
         realmLocation.date = now
         realmLocation.latitude = Double(latitude)
@@ -382,11 +365,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         try! realm.write {
             realm.add(realmLocation)
         }
-        let locations = realm.objects(RealmLocation)
-         print(locations)
-        
-        
-        
     }
     
     func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
@@ -398,7 +376,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     func clientManager(clientManager: MSBClientManager!, clientDidConnect client: MSBClient!) {
         print("client did connected!!")
         self.client!.tileDelegate = self
-        //TODO: create the page on tile
+        //Pageをtileに送る
         var tile:MSBTile = self.tileWithButtonLayout()!
         self.client?.tileManager.addTile(tile, completionHandler: {
             (err) in
@@ -419,31 +397,32 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 print("error1:" + err.description)
             }
         })
-        //TODO: start to get lifelog
         
-         if self.client?.sensorManager.heartRateUserConsent() == MSBUserConsent.Granted{
-         startHeartRateUpdates(self.client!)
-         }else{
-         self.message.text = "Requesting user consent for accessing HeartRate..."
-         self.client?.sensorManager.requestHRUserConsentWithCompletion(
-         {[weak self](userConsent:Bool,err:NSError!) -> Void in
-         if let weakSelf = self {
-         if(userConsent){
-/*            let startHRselector:Selector = #selector(ViewController.startHeartRateUpdates)
-            NSTimer.scheduledTimerWithTimeInterval(5,target: weakSelf,selector: startHRselector,userInfo: weakSelf.client!,repeats: true)
+        //生体データ取得開始
+        if self.client?.sensorManager.heartRateUserConsent() == MSBUserConsent.Granted{
+            startHeartRateUpdates(self.client!)
+        }else{
+            self.message.text = "Requesting user consent for accessing HeartRate..."
+            self.client?.sensorManager.requestHRUserConsentWithCompletion(
+                {[weak self](userConsent:Bool,err:NSError!) -> Void in
+                    if let weakSelf = self {
+                        if(userConsent){
+/*
+                            let startHRselector:Selector = #selector(ViewController.startHeartRateUpdates)
+                            NSTimer.scheduledTimerWithTimeInterval(5,target: weakSelf,selector:　startHRselector,userInfo: weakSelf.client!,repeats: true)
 */
-         weakSelf.startHeartRateUpdates(weakSelf.client!)
-         }else{
-         weakSelf.HRtext.text = "User consent declined";
-         }
-         }
-         })
-         }
-         
+                            weakSelf.startHeartRateUpdates(weakSelf.client!)
+                        }else{
+                            weakSelf.HRtext.text = "User consent declined";
+                        }
+                    }
+                })
+        }
+        
          self.startGSRUpdates()
          self.startAccelermaterUpdates()
          
-        
+        //通知の開始
         /*//start sendNotification
          self.doNotification = true;
          self.sendNotificationToBand(self.client!)
@@ -465,18 +444,26 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK: -
     //MARK:MSBClitentTileDelegate
     func client(client: MSBClient!, tileDidOpen event: MSBTileEvent!) {
-        
-        
     }
     
     func client(client: MSBClient!, tileDidClose event: MSBTileEvent!) {
-        
     }
     
     func client(client: MSBClient!, buttonDidPress event: MSBTileButtonEvent!) {
-        //Bandへの通知(取得できたよありがとう)
         print("pressed button!")
-        //保存
+        //Bandへ通知
+        let tileString = "Thank you!"
+        let bodyString = "You labeled.Please go back." //FIX ME: 現在時刻を加える？
+        client.notificationManager.showDialogWithTileID(TILEID, title: tileString, body: bodyString, completionHandler: {
+            (didPressError) in
+            if didPressError != nil{
+                print (didPressError.description)
+            }
+        })
+        //ラベルを取得し永続化
+        let nowButton:String = event.buttonId.description
+        print(nowButton)
+        
         let now = NSDate()
         let realmLabel = RealmLabel()
         realmLabel.date = now
@@ -485,23 +472,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         try! realm.write {
             realm.add(realmLabel)
         }
-        /*今までのデータを列挙
-        let labels = realm.objects(RealmLabel)
-        print(labels)
-         */
-        //通知
-        var tileString = "Thank you!"
-        var bodyString = "You labeled.Please go back." //+ 現在時刻
-        client.notificationManager.showDialogWithTileID(TILEID, title: tileString, body: bodyString, completionHandler: {
-            (didPressError) in
-            if didPressError != nil{
-                print (didPressError.description)
-            }
-        })
-        //ラベルを取得
-        var nowButton:String = event.buttonId.description
-        print(nowButton)
-        //DBに保存
         }
         
         
