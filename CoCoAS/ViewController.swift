@@ -13,8 +13,13 @@ import RealmSwift
 class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDelegate,CLLocationManagerDelegate{
     var client:MSBClient? = nil
     let TILEID:NSUUID = NSUUID.init(UUIDString: "CABDBA9F-12FD-47A5-8453-E7270A43BB98")!
+    let YESNum:UInt16 = 11
+    let NoNum:UInt16 = 12
     
+    //通知判定
     var doNotification:Bool = false;
+    
+    //
 
     //stress判定で使うために生体データの値をグローバルに
     var hr:UInt? = nil;
@@ -38,12 +43,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK: -
     override func viewDidLoad() {
         super.viewDidLoad()
-        //realmを一旦削除
-        
         self.message.text="CoCoASにようこそ!"
-        //TODO:set CoreDataManager
         
-        //TODO:start get locations
+        //start get locations
         clmanager = CLLocationManager()
         longitude = CLLocationDegrees()
         latitude = CLLocationDegrees()
@@ -95,12 +97,12 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         
         //create a TextButton
         let buttonYes = MSBPageTextButton.init(rect: MSBPageRect.init(x: 0, y: 0, width: 100, height: 40))
-        buttonYes.elementId = 11
+        buttonYes.elementId = self.YESNum
         buttonYes.horizontalAlignment = MSBPageHorizontalAlignment.Center
         buttonYes.margins = MSBPageMargins.init(left: 5, top: 2, right: 5, bottom: 2)
         
         let buttonNo = MSBPageTextButton.init(rect: MSBPageRect.init(x: 0, y: 0, width: 100, height: 40))
-        buttonNo.elementId = 12
+        buttonNo.elementId = self.NoNum
         buttonNo.horizontalAlignment = MSBPageHorizontalAlignment.Center
         buttonNo.margins = MSBPageMargins.init(left: 5, top: 2, right: 5, bottom: 2)
         
