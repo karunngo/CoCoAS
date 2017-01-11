@@ -31,3 +31,9 @@ class RealmAcc: Object {
     dynamic var z:Double = 0.0
     dynamic var synthesized:Double = 0.0
 }
+
+class RealmLocation: Object {
+    dynamic var date:NSDate? = nil
+    dynamic var latitude:Double = 0.0
+    dynamic var longitude:Double = 0.0    
+}

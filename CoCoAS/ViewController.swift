@@ -368,9 +368,25 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     func locationManager(manager: CLLocationManager, didUpdateToLocation newLocation: CLLocation, fromLocation oldLocation: CLLocation){
         latitude = newLocation.coordinate.latitude
         longitude = newLocation.coordinate.longitude
+        let now = NSDate()
         //print("latitude:" + latitude.description + "longitude:" + longitude.description)
         self.latitudeText.text = "latitude : " + latitude.description
         self.longitudeText.text = "longitude : " + longitude.description
+        
+        //保存
+        let realmLocation = RealmLocation()
+        realmLocation.date = now
+        realmLocation.latitude = Double(latitude)
+        realmLocation.longitude = Double(longitude)
+        let realm = try! Realm()
+        try! realm.write {
+            realm.add(realmLocation)
+        }
+        let locations = realm.objects(RealmLocation)
+         print(locations)
+        
+        
+        
     }
     
     func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
