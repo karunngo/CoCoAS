@@ -260,11 +260,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         NSTimer.scheduledTimerWithTimeInterval(5,target: self,selector: startHRselector,userInfo: nil,repeats: true)
         
         
-        
-        
-        
-        
-        
         //UIBackgroundTaskIdentifierを使ってみよっと。Timerじゃダメだった
         
     }
@@ -282,11 +277,26 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     func startGSRUpdates(){
         let GSRhandler = {[weak self](gsrData:MSBSensorGSRData!,gsrError:NSError!)in
             if let weakSelf = self {
-                var gsr = gsrData.resistance
+                let gsr = Int(bitPattern:gsrData.resistance)
                 let now = NSDate()
-                weakSelf.GSRtext.text = "GSR : " + gsr.description + ":" + now.description
+                weakSelf.GSRtext.text = "GSR : " + gsr.description
+
+                //GSRの永続化
+                let realmGSR = RealmGSR()
+                realmGSR.date = now
+                realmGSR.gsr = gsr
+                let realm = try! Realm()
+                try! realm.write {
+                    realm.add(realmGSR)
+                }
+                //保存できたか確認
+                let gsrs = realm.objects(RealmGSR)
+                print(gsrs)
+
             }
+            
         }
+        
         do{
             try self.client?.sensorManager.startGSRUpdatesToQueue(nil, withHandler: GSRhandler)
         }catch let error as NSError{
@@ -442,9 +452,10 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         try! realm.write {
             realm.add(realmLabel)
         }
-        //今までのデータを列挙
+        /*今までのデータを列挙
         let labels = realm.objects(RealmLabel)
         print(labels)
+         */
         //通知
         var tileString = "Thank you!"
         var bodyString = "You labeled.Please go back." //+ 現在時刻

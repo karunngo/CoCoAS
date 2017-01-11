@@ -18,3 +18,8 @@ class RealmHR: Object {
     dynamic var quality:String = ""
     dynamic var hr:Int = 0
 }
+
+class RealmGSR: Object {
+    dynamic var date:NSDate? = nil
+    dynamic var gsr:Int = 0
+}
