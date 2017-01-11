@@ -164,6 +164,15 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             }
         }
     }
+    //HRQualityをStringで返す
+    func qualityToString(hrData:MSBSensorHeartRateData!)->String{
+        switch hrData.quality {
+        case MSBSensorHeartRateQuality.Acquiring:
+            return "Acquiring"
+        case MSBSensorHeartRateQuality.Locked:
+            return "Locked"
+        }
+    }
     
     
     
@@ -216,10 +225,12 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         let HRhandler = {[weak self](heartRateData:MSBSensorHeartRateData!,handlerror:NSError!) in
             if let weakSelf = self {
                 self!.hr = heartRateData.heartRate
-                var hrQuality = heartRateData.quality
+                var hrQuality:String = self!.qualityToString(heartRateData)
                 let now = NSDate()
-                print(heartRateData.heartRate.description)
-                weakSelf.HRtext.text = "HR : " + heartRateData.heartRate.description + ":" + now.description
+                print("HRQuality = ")
+                print(hrQuality)
+                weakSelf.HRtext.text = "HR : " + heartRateData.heartRate.description
+                
                 do{
                     try weakSelf.client?.sensorManager.startHeartRateUpdatesToQueue(nil, withHandler: {
                         [weak self](HrData : MSBSensorHeartRateData!,hrError:NSError!)in})
