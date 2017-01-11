@@ -13,7 +13,8 @@ class RealmLabel: Object {
     dynamic var name:String = ""
 }
 
-class User2: Object {
-    dynamic var id = 1
-    dynamic var name = ""
+class RealmHR: Object {
+    dynamic var date:NSDate? = nil
+    dynamic var quality:String = ""
+    dynamic var hr:Int = 0
 }

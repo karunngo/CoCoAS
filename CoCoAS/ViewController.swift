@@ -22,7 +22,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //
 
     //stress判定で使うために生体データの値をグローバルに
-    var hr:UInt? = nil;
+    var hr:Int = 0;
     
     //位置データ取得
     var clmanager: CLLocationManager!
@@ -222,14 +222,22 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK:LifelogDatasUpdate
     //HR
     func startHeartRateUpdates(client:MSBClient){
-        let HRhandler = {[weak self](heartRateData:MSBSensorHeartRateData!,handlerror:NSError!) in
+        let HRhandler = {[weak self](hrData:MSBSensorHeartRateData!,handlerror:NSError!) in
             if let weakSelf = self {
-                self!.hr = heartRateData.heartRate
-                var hrQuality:String = self!.qualityToString(heartRateData)
+                self!.hr = Int(bitPattern:hrData.heartRate)
+                let hrQuality:String = self!.qualityToString(hrData)
                 let now = NSDate()
-                print("HRQuality = ")
-                print(hrQuality)
-                weakSelf.HRtext.text = "HR : " + heartRateData.heartRate.description
+                weakSelf.HRtext.text = "HR : " + hrData.heartRate.description
+                
+                //HRの永続化
+                let realmHR = RealmHR()
+                realmHR.date = now
+                realmHR.quality = hrQuality
+                realmHR.hr = self!.hr
+                let realm = try! Realm()
+                try! realm.write {
+                    realm.add(realmHR)
+                }
                 
                 do{
                     try weakSelf.client?.sensorManager.startHeartRateUpdatesToQueue(nil, withHandler: {
@@ -427,12 +435,12 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         print("pressed button!")
         //保存
         let now = NSDate()
-        let labelData = RealmLabel()
-        labelData.date = now
-        labelData.name = "test"
+        let realmLabel = RealmLabel()
+        realmLabel.date = now
+        realmLabel.name = "test"
         let realm = try! Realm()
         try! realm.write {
-            realm.add(labelData)
+            realm.add(realmLabel)
         }
         //今までのデータを列挙
         let labels = realm.objects(RealmLabel)
