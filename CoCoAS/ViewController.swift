@@ -194,17 +194,19 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     func sendNotificationToBand(client:MSBClient){
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0)) {
             while(self.doNotification){
-                print("通知挑戦したよ！")
                 if self.judgeStress() {
+                    print("judgeStressがスタート")
                     var now = NSDate()
                     var tileString = "Are You Stressed?"
                     var bodyString = "Please labeled." //+ 現在時刻
                     //TODO:通知する
                     client.notificationManager.showDialogWithTileID(self.TILEID, title: tileString, body: bodyString, completionHandler:{
-                        (sendError) in
-                        if(sendError != nil){
+                    (sendError) in
+                        if(sendError == nil){
                             //TODO:通知した時刻を保存
+                            print("送るのは成功")
                             self.doNotification = false
+                            print("falseになったよ")
                         }else{
                             print(sendError.description)
                         }
