@@ -192,25 +192,30 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK: -
     //MARK:Notification manage
     func sendNotificationToBand(client:MSBClient){
-        //while(self.doNotification){
-        print("通知挑戦したよ！")
-            if judgeStress() {
-                var now = NSDate()
-                var tileString = "Are You Stressed?"
-                var bodyString = "Please labeled." //+ 現在時刻
-                //TODO:通知する
-                client.notificationManager.showDialogWithTileID(TILEID, title: tileString, body: bodyString, completionHandler:{
-                    (sendError) in
-                    if(sendError != nil){
-                        //TODO:通知した時刻を保存
-                        self.doNotification = false
-                    }else{
-                        print(sendError.description)
-                    }
-                })
-                self.doNotification = false;
-            //}
-            //sleep(5)
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0)) {
+            while(self.doNotification){
+                print("通知挑戦したよ！")
+                if self.judgeStress() {
+                    var now = NSDate()
+                    var tileString = "Are You Stressed?"
+                    var bodyString = "Please labeled." //+ 現在時刻
+                    //TODO:通知する
+                    client.notificationManager.showDialogWithTileID(self.TILEID, title: tileString, body: bodyString, completionHandler:{
+                        (sendError) in
+                        if(sendError != nil){
+                            //TODO:通知した時刻を保存
+                            self.doNotification = false
+                        }else{
+                            print(sendError.description)
+                        }
+                    })
+                    self.doNotification = false;
+                }
+                sleep(5)
+            }
+            dispatch_async(dispatch_get_main_queue()) {
+                // 上でさせた作業でUI機能が呼ばれた時
+            }
         }
 
     }
@@ -333,7 +338,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 weakSelf.accZtext.text = "AccZ : " + accZ.description
             }
             
-            //ACCの永続化
+            /*//ACCの永続化
             let realmAcc = RealmAcc()
             realmAcc.date = now
             realmAcc.x = accX
@@ -344,6 +349,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             try! realm.write {
                 realm.add(realmAcc)
             }
+             */
         }
         
         do{
