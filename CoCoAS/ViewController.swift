@@ -46,6 +46,20 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         super.viewDidLoad()
         self.message.text="CoCoASにようこそ!"
         
+        /* //realmで中身確認
+        let realm = try! Realm()
+        let test1 = realm.objects(RealmHR)
+        let test2 = realm.objects(RealmGSR)
+        let test3 = realm.objects(RealmAcc)
+        let test4 = realm.objects(RealmLocation)
+        let test5 = realm.objects(RealmLabel)
+        print(test1)
+        print(test2)
+        print(test3)
+        print(test4)
+        print(test5)
+        */
+        
         //位置情報の取得開始
         clmanager = CLLocationManager()
         longitude = CLLocationDegrees()
@@ -178,7 +192,8 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK: -
     //MARK:Notification manage
     func sendNotificationToBand(client:MSBClient){
-        while(self.doNotification){
+        //while(self.doNotification){
+        print("通知挑戦したよ！")
             if judgeStress() {
                 var now = NSDate()
                 var tileString = "Are You Stressed?"
@@ -193,8 +208,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                         print(sendError.description)
                     }
                 })
-            }
-            sleep(5)
+                self.doNotification = false;
+            //}
+            //sleep(5)
         }
 
     }
@@ -219,7 +235,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 let hrQuality:String = self!.qualityToString(hrData)
                 let now = NSDate()
                 weakSelf.HRtext.text = "HR : " + hrData.heartRate.description
-                print(hrData.heartRate.description)
                 
                 //HRの永続化
                 let realmHR = RealmHR()
@@ -318,7 +333,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 weakSelf.accZtext.text = "AccZ : " + accZ.description
             }
             
-            //GSRの永続化
+            //ACCの永続化
             let realmAcc = RealmAcc()
             realmAcc.date = now
             realmAcc.x = accX
@@ -424,10 +439,10 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
          self.startAccelermaterUpdates()
          
         //通知の開始
-        /*//start sendNotification
+        //start sendNotification
          self.doNotification = true;
          self.sendNotificationToBand(self.client!)
-         */
+        
     }
     
     func clientManager(clientManager: MSBClientManager!, clientDidDisconnect client: MSBClient!) {
@@ -473,6 +488,8 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         try! realm.write {
             realm.add(realmLabel)
         }
+        
+        self.doNotification = true;
         }
         
         
