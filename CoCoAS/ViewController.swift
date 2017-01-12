@@ -219,6 +219,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 let hrQuality:String = self!.qualityToString(hrData)
                 let now = NSDate()
                 weakSelf.HRtext.text = "HR : " + hrData.heartRate.description
+                print(hrData.heartRate.description)
                 
                 //HRの永続化
                 let realmHR = RealmHR()
