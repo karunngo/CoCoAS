@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreLocation
+import Alamofire
 
 class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDelegate,CLLocationManagerDelegate{
     var client:MSBClient? = nil
@@ -33,6 +34,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     var clmanager: CLLocationManager!
     var latitude: CLLocationDegrees!
     var longitude: CLLocationDegrees!
+    
+    //ユーザ情報
+    var userName = "test"
     
     //各データのパスとcsvの一行目
     var lifelogDataPath = ""
@@ -156,31 +160,30 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     
     //TODO:10分ごとに送信
     func postTimer(timer:NSTimer){
-            //インターネットに接続していたらデータを送信
-            //ディスプレイ用のカウンタ
-            //counter = counter + 1
+        //インターネットに接続していたらデータを送信
+        //ディスプレイ用のカウンタ
+        //counter = counter + 1
         
-            //ファイル中身
-            print("センサデータの保存されたcsvを読み込み中")
-            let lifelogContents = NSString(contentsOfFile: self.lifelogDataPath, encoding: NSUTF8StringEncoding, error: nil)! as String
-                    
-            //POST送信
-            print("データをPOSTします")
-            let params = ["data" : lifelogContents, "userName" : userName]
+        //ファイル中身
+        var lifelogContents:String = ""
+        print("センサデータの保存されたcsvを読み込み中")
+        do{
+            try lifelogContents = NSString(contentsOfFile: self.lifelogDataPath, encoding: NSUTF8StringEncoding) as String
+        }catch{}
+        
+        //POST送信
+        print("データをPOSTします")
+        let params = ["data" : lifelogContents, "user_name" : self.userName]
             Alamofire.request(.POST, "http://life-cloud.ht.sfc.keio.ac.jp/~karu/cocoas/Cocoas.php", parameters: params)
             .response { (request, response, data, error) in
                             
-            if (response?.statusCode == 200) {
-            //通信が成功したらファイルのクリーンアップ
-            print("fabiusData sent.")
-                                self.fileCleanup("fabius")
-                                //ポストしなかった回数変数の初期化
-                                self.didNotPostCounter = 0
-            } else {
-                                println("Connection ERROR.\n==========")
-                                println(toString(response) + "\n===========")
-                                println(toString(data) + "\n==========")
-                                println(error)
+                if (response?.statusCode == 200) {
+                    //通信が成功したらファイルのクリーンアップ
+                    print("lifelogData sent.")
+                    self.fileCleanup("lifelogData")
+                } else {
+                    print("送信に失敗しました")
+                }
             }
         
     }
@@ -477,24 +480,34 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         return dateFormatter.dateFromString(dateString)!
     }
-    
-    //現在のネットワーク接続状況をStringで返す
-    func getNetworkState() -> String {
-        let statusType = IJReachability.isConnectedToNetworkOfType()
-        var status: String = ""
+
+    //ファイルをクリーンアップする
+    func fileCleanup(file_name: String) {
         
-        switch statusType {
-        case .WWAN:
-            status = "Mobile"
-        case .WiFi:
-            status = "WiFi"
-        case .NotConnected:
-            status = "Not Connected"
+        print("Cleaning " + file_name + " File.")
+        let cleanData:String = ""
+        var cleanPath:String = ""
+        
+        switch file_name {
+        case "lifelogData":
+            cleanPath = self.lifelogDataPath
+            break;
+        case "labelData":
+            cleanPath = self.labelDataPath
+            break;
+        case "notifiDataPath":
+            cleanPath = self.notifiDataPath
+        default:
+            print("不明のfileCleanup")
         }
         
-        return status
-    }
+        do{
+            try cleanData.writeToFile(cleanPath, atomically: true, encoding: NSUTF8StringEncoding)
+        }catch{
+        }
 
+        
+    }
     
     
     
