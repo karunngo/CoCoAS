@@ -159,6 +159,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     
     //TODO:10分ごとに送信
     
+    
     //MARK: -
     
     //MARK:MSBClientManagerDelegate(MSBandとの接続管理)
@@ -311,10 +312,16 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK: -
     //MARK:MSBandへの通知を管理
     func sendNotificationToBand(client:MSBClient){
+        
+        let dateFormatter = NSDateFormatter()
+        dateFormatter.locale = NSLocale(localeIdentifier: "en_US")
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0)) {
             while(true){
                 if self.doNotification{
                     let now = NSDate()
+                    let nowString:String = dateFormatter.stringFromDate(now)
                     //TODO: 直前の通知＋30分後を調べる。今の時刻がそれよりあとなら、通知をする
                     let startNotifiDate = NSDate(timeInterval: 60*30, sinceDate:now)//nowを直前通知時刻にすること。
                     print("通知開始予定時刻：")
@@ -325,9 +332,11 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                         client.notificationManager.showDialogWithTileID(self.TILEID, title: tileString, body: bodyString, completionHandler:{
                             (sendError) in
                             if(sendError == nil){
-                                print("送るのは成功")
+                                print("送るの成功")
                                 self.doNotification = false
+                                self.appendToCSV(self.notifiDataPath, data: nowString + "\n")
                                 print("falseになったよ")
+                                
                             }else{
                                 print(sendError.description)
                             }
@@ -372,12 +381,24 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             }
         })
         //TODO:ラベルを取得し永続化
-        let nowButton:String = event.buttonId.description
+        var labelString = "";
+        let nowButton = event.buttonId
         print(nowButton)
+        if nowButton == YESNum {
+            labelString = "YES"
+        }else if nowButton == NoNum {
+            labelString = "NO"
+        }else{
+            labelString = "Error"
+        }
         
+        let dateFormatter = NSDateFormatter()
+        dateFormatter.locale = NSLocale(localeIdentifier: "en_US")
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         let now = NSDate()
-        
-        
+        let nowString = dateFormatter.stringFromDate(now)
+        let saveData:String = nowString + "," + labelString + "\n"
+        self.appendToCSV(self.notifiDataPath, data: saveData)
         self.doNotification = true;
     }
     
