@@ -139,13 +139,10 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //TODO:5秒ごとに保存
     func saveTimer(timer:NSTimer){
         //現在時刻取得(CSVにするにあたり、String化)
-        let dateFormatter = NSDateFormatter()
-        dateFormatter.locale = NSLocale(localeIdentifier: "en_US")
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         let now = NSDate()
         
         //lifelogDataColumn:date,hr,hrquality,gsr,accx,accy,accz,accs,lati,longi
-        let nowString = dateFormatter.stringFromDate(now)
+        let nowString = self.dateToStrint(now)
         let hrS:String = String(self.hr) + "," + self.hrQuality
         let gsrS:String = String(self.gsr)
         let acc4:String = String(self.accX) + "," + String(self.accY) + "," + String(self.accZ) + "," + String(self.accS)
@@ -313,15 +310,11 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK:MSBandへの通知を管理
     func sendNotificationToBand(client:MSBClient){
         
-        let dateFormatter = NSDateFormatter()
-        dateFormatter.locale = NSLocale(localeIdentifier: "en_US")
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0)) {
             while(true){
                 if self.doNotification{
                     let now = NSDate()
-                    let nowString:String = dateFormatter.stringFromDate(now)
+                    let nowString = self.dateToStrint(now)
                     //TODO: 直前の通知＋30分後を調べる。今の時刻がそれよりあとなら、通知をする
                     let startNotifiDate = NSDate(timeInterval: 60*30, sinceDate:now)//nowを直前通知時刻にすること。
                     print("通知開始予定時刻：")
@@ -392,11 +385,8 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             labelString = "Error"
         }
         
-        let dateFormatter = NSDateFormatter()
-        dateFormatter.locale = NSLocale(localeIdentifier: "en_US")
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         let now = NSDate()
-        let nowString = dateFormatter.stringFromDate(now)
+        let nowString = self.dateToStrint(now)
         let saveData:String = nowString + "," + labelString + "\n"
         self.appendToCSV(self.notifiDataPath, data: saveData)
         self.doNotification = true;
@@ -441,6 +431,21 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             print("ファイルの読み込み失敗" + error.description)
         }
         
+    }
+    
+    //現在時刻をStringで書き出す
+    func dateToStrint(date:NSDate)->String{
+        let dateFormatter = NSDateFormatter()
+        dateFormatter.locale = NSLocale(localeIdentifier: "en_US")
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return dateFormatter.stringFromDate(date)
+    }
+    
+    func dateFromString(dateString:String) -> NSDate {
+        let dateFormatter = NSDateFormatter()
+        dateFormatter.locale = NSLocale(localeIdentifier: "en_US")
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return dateFormatter.dateFromString(dateString)!
     }
     
     
