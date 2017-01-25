@@ -45,20 +45,21 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     override func viewDidLoad() {
         super.viewDidLoad()
         self.message.text="CoCoASにようこそ!"
-        
-        /* //realmで中身確認
+        let notificationCenter = NSNotificationCenter.defaultCenter()
+         //realmで中身確認
         let realm = try! Realm()
-        let test1 = realm.objects(RealmHR)
-        let test2 = realm.objects(RealmGSR)
+        //let test1 = realm.objects(RealmHR)
+        //let test2 = realm.objects(RealmGSR)
         let test3 = realm.objects(RealmAcc)
         let test4 = realm.objects(RealmLocation)
         let test5 = realm.objects(RealmLabel)
-        print(test1)
-        print(test2)
+        //print(test1)
+        //print(test2)
         print(test3)
         print(test4)
         print(test5)
-        */
+        //*/
+        
         
         //位置情報の取得開始
         clmanager = CLLocationManager()
@@ -81,6 +82,14 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         }
         MSBClientManager.sharedManager().connectClient(self.client)
         self.message.text="Please wait. Connecting to Band "
+        
+        //終了したら、clientとの接続を切る
+        notificationCenter.addObserver(
+            self,
+            selector: "closeClients:",
+            name:UIApplicationWillTerminateNotification,
+            object: nil)
+        
         
     }
 
@@ -162,6 +171,15 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     
     //MARK:-
     //MARK: Helper methods
+    //画面が閉じた時の処理
+    func closeClients(){
+        stopHeartRateUpdates()
+        stopGSRUpdates()
+        stopAccelermaterUpdates()
+        MSBClientManager.sharedManager().cancelClientConnection(self.client)
+        print("接続を切ったよ！")
+        
+    }
     //HRQualityをStringで返す
     func qualityToString(hrData:MSBSensorHeartRateData!)->String{
         switch hrData.quality {
@@ -171,6 +189,8 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             return "Locked"
         }
     }
+    //時刻を比較出来るように
+    
     //realmのデータを全削除(デバック用)
     func resetRealm(){
         let realmURL = Realm.Configuration.defaultConfiguration.fileURL!
@@ -193,27 +213,37 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //MARK:Notification manage
     func sendNotificationToBand(client:MSBClient){
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0)) {
-            while(self.doNotification){
-                if self.judgeStress() {
-                    print("judgeStressがスタート")
-                    var now = NSDate()
-                    var tileString = "Are You Stressed?"
-                    var bodyString = "Please labeled." //+ 現在時刻
-                    //TODO:通知する
-                    client.notificationManager.showDialogWithTileID(self.TILEID, title: tileString, body: bodyString, completionHandler:{
-                    (sendError) in
-                        if(sendError == nil){
-                            //TODO:通知した時刻を保存
-                            print("送るのは成功")
-                            self.doNotification = false
-                            print("falseになったよ")
-                        }else{
-                            print(sendError.description)
-                        }
-                    })
-                    self.doNotification = false;
+            let realm = try! Realm()
+            while(true){
+                if self.doNotification{
+                    let now = NSDate()
+                    let dates = realm.objects(RealmNotification).sorted("date", ascending: false)
+                    let startNotifiDate = NSDate(timeInterval: 60*30, sinceDate: dates[0].date!)
+                    print("通知開始予定時刻：")
+                    print(dates[0].date!)
+                    if self.judgeStress() && now.compare(startNotifiDate) == .OrderedAscending {
+                        print("judgeStressがスタート")
+                        let tileString = "Are You Stressed?"
+                        let bodyString = "Please labeled." //+ 現在時刻
+                        client.notificationManager.showDialogWithTileID(self.TILEID, title: tileString, body: bodyString, completionHandler:{
+                            (sendError) in
+                            if(sendError == nil){
+                                let realmNotifi = RealmNotification()
+                                realmNotifi.date = now
+                                try! realm.write {
+                                    realm.add(realmNotifi)
+                                }
+                                print("送るのは成功")
+                                self.doNotification = false
+                                print("falseになったよ")
+                            }else{
+                                print(sendError.description)
+                            }
+                        })
+                        self.doNotification = false;
+                    }
+                    sleep(500)
                 }
-                sleep(5)
             }
             dispatch_async(dispatch_get_main_queue()) {
                 // 上でさせた作業でUI機能が呼ばれた時
@@ -283,8 +313,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             try self.client?.sensorManager.stopHeartRateUpdatesErrorRef()
         }catch{
         }
-        self.HRtext.text="try again..."
-        self.startHeartRateUpdates(self.client!);
     }
 
     //GSR
@@ -321,8 +349,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             try self.client?.sensorManager.stopGSRUpdatesErrorRef()
         }catch{
         }
-        self.GSRtext.text="try again..."
-        self.startGSRUpdates()
     }
     
     func startAccelermaterUpdates(){
@@ -368,8 +394,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
             try self.client?.sensorManager.stopAccelerometerUpdatesErrorRef()
         }catch{
         }
-        self.accXtext.text = "try again..."
-        self.startAccelermaterUpdates()
     }
     
     //locationdata
@@ -396,8 +420,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     }
     
     //MARK: -
-    //MARK:MSBClientManagerDelegate
-    func clientManager(clientManager: MSBClientManager!, clientDidConnect client: MSBClient!) {
+    func startCoCoAS(clientManager: MSBClientManager,client:MSBClient){
         print("client did connected!!")
         self.client!.tileDelegate = self
         //Pageをtileに送る
@@ -431,10 +454,10 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 {[weak self](userConsent:Bool,err:NSError!) -> Void in
                     if let weakSelf = self {
                         if(userConsent){
-/*
-                            let startHRselector:Selector = #selector(ViewController.startHeartRateUpdates)
-                            NSTimer.scheduledTimerWithTimeInterval(5,target: weakSelf,selector:　startHRselector,userInfo: weakSelf.client!,repeats: true)
-*/
+                            /*
+                             let startHRselector:Selector = #selector(ViewController.startHeartRateUpdates)
+                             NSTimer.scheduledTimerWithTimeInterval(5,target: weakSelf,selector:　startHRselector,userInfo: weakSelf.client!,repeats: true)
+                             */
                             weakSelf.startHeartRateUpdates(weakSelf.client!)
                         }else{
                             weakSelf.HRtext.text = "User consent declined";
@@ -443,25 +466,29 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 })
         }
         
-         self.startGSRUpdates()
-         self.startAccelermaterUpdates()
-         
-        //通知の開始
-        //start sendNotification
-         self.doNotification = true;
-         self.sendNotificationToBand(self.client!)
+        self.startGSRUpdates()
+        //self.startAccelermaterUpdates()
         
+        //通知の開始
+        self.doNotification = true;
+        self.sendNotificationToBand(self.client!)
+
+    }
+    //MARK:MSBClientManagerDelegate
+    func clientManager(clientManager: MSBClientManager!, clientDidConnect client: MSBClient!) {
+        startCoCoAS(clientManager, client: client)
     }
     
     func clientManager(clientManager: MSBClientManager!, clientDidDisconnect client: MSBClient!) {
         //再接続
-        MSBClientManager.sharedManager().connectClient(self.client)
+        print("Client切れたよ！")
+        //MSBClientManager.sharedManager().connectClient(self.client)
     }
     
     func clientManager(clientManager: MSBClientManager!, client: MSBClient!, didFailToConnectWithError error: NSError!) {
         //再接続
-        MSBClientManager.sharedManager().connectClient(self.client)
-        
+        print("Client接続失敗してるよ")
+        startCoCoAS(clientManager, client: client)        
     }
     
     
