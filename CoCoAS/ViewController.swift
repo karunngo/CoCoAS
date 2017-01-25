@@ -33,6 +33,13 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     var latitude: CLLocationDegrees!
     var longitude: CLLocationDegrees!
     
+    //各データcsvの一行目
+    let lifelogDataColumn = "date,hr,gsr,accx,accy,accz,accs,lati,longi"
+    let labelDataColumn = "date,label"
+    let notifiDataColumn = "date"
+    
+    
+    
     //View
     @IBOutlet weak var message: UILabel!
     @IBOutlet weak var HRtext: UILabel!
@@ -52,7 +59,41 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         let notificationCenter = NSNotificationCenter.defaultCenter()
         
         //データ保存用のファイルパス
+        let path = NSSearchPathForDirectoriesInDomains(.DocumentDirectory,.UserDomainMask, true)[0] as String
+        let lifelogDataPath:String = path + "/lifelog.csv"
+        let labelDataPath:String = path + "/label.csv"
+        let notifiDataPath:String = path + "/notification.csv"
         
+        //各データ保存用のファイルが存在するか確認
+        let checkValidation:NSFileManager = NSFileManager.defaultManager()
+        
+        if (checkValidation.fileExistsAtPath(lifelogDataPath) == false) {
+            print(lifelogDataPath + "は存在しません。ファイルを作ります");
+            do{
+                try self.lifelogDataColumn.writeToFile(lifelogDataPath, atomically: true, encoding: NSUTF8StringEncoding)
+            }catch let error as NSError{
+                print("lifelog.csvファイル作成失敗　error:"+error.description)
+            }
+        }
+        
+        if (checkValidation.fileExistsAtPath(labelDataPath) == false) {
+            print(labelDataPath + "は存在しません。ファイルを作ります");
+            do{
+                try self.labelDataColumn.writeToFile(labelDataPath, atomically: true, encoding: NSUTF8StringEncoding)
+            }catch let error as NSError{
+                print("label.csvファイル作成失敗　error:"+error.description)
+            }
+        }
+        
+        if (checkValidation.fileExistsAtPath(notifiDataPath) == false) {
+            print(notifiDataPath + "は存在しません。ファイルを作ります");
+            do{
+                try self.lifelogDataColumn.writeToFile(notifiDataPath, atomically: true, encoding: NSUTF8StringEncoding)
+            }catch let error as NSError{
+                print("notification.csvファイル作成失敗　error:"+error.description)
+            }
+        }
+
         
         //位置情報の取得開始
         clmanager = CLLocationManager()
