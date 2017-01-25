@@ -160,32 +160,55 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     
     //TODO:10分ごとに送信
     func postTimer(timer:NSTimer){
-        //インターネットに接続していたらデータを送信
-        //ディスプレイ用のカウンタ
-        //counter = counter + 1
-        
         //ファイル中身
+        
         var lifelogContents:String = ""
+        var labelContents:String = ""
+        var notifiContents:String = ""
+        //読み込みに成功したか
+        var lifelogReadSuccess:Bool = true
+        var labelReadSuccess:Bool = true
+        var notifiReadSuccess:Bool = true
         print("センサデータの保存されたcsvを読み込み中")
-        do{
-            try lifelogContents = NSString(contentsOfFile: self.lifelogDataPath, encoding: NSUTF8StringEncoding) as String
-        }catch{}
+        //FIX ME: 同じこと繰り返してる。完結に書きたい
+        do{try lifelogContents = NSString(contentsOfFile: self.lifelogDataPath, encoding: NSUTF8StringEncoding) as String
+        }catch{lifelogReadSuccess = false}
+        
+        do{try labelContents = NSString(contentsOfFile: self.labelDataPath, encoding: NSUTF8StringEncoding) as String
+        }catch{labelReadSuccess = false}
+        
+        do{try notifiContents = NSString(contentsOfFile: self.notifiDataPath, encoding: NSUTF8StringEncoding) as String
+        }catch{notifiReadSuccess = false}
         
         //POST送信
+        if lifelogReadSuccess{
+            postData(lifelogContents, fileName: "lifelogData")
+        }
+        
+        if labelReadSuccess{
+            postData(labelContents, fileName: "labelData")
+        }
+        
+        if notifiReadSuccess{
+            postData(notifiContents, fileName: "notifiData")
+        }
+        
+    }
+    
+    func postData(dataContents:String,fileName:String){
         print("データをPOSTします")
-        let params = ["data" : lifelogContents, "user_name" : self.userName]
-            Alamofire.request(.POST, "http://life-cloud.ht.sfc.keio.ac.jp/~karu/cocoas/Cocoas.php", parameters: params)
+        let params = ["data" : dataContents, "user_name" : self.userName, "type":fileName]
+        Alamofire.request(.POST, "http://life-cloud.ht.sfc.keio.ac.jp/~karu/cocoas/Cocoas.php", parameters: params)
             .response { (request, response, data, error) in
-                            
+                
                 if (response?.statusCode == 200) {
                     //通信が成功したらファイルのクリーンアップ
-                    print("lifelogData sent.")
-                    self.fileCleanup("lifelogData")
+                    print(fileName + "のデータを送りました")
+                    self.fileCleanup(fileName)
                 } else {
-                    print("送信に失敗しました")
+                    print(fileName + "の送信に失敗しました")
                 }
-            }
-        
+        }
     }
     
     
