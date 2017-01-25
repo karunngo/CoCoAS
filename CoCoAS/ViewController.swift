@@ -51,6 +51,8 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         self.message.text="CoCoASにようこそ!"
         let notificationCenter = NSNotificationCenter.defaultCenter()
         
+        //データ保存用のファイルパス
+        
         
         //位置情報の取得開始
         clmanager = CLLocationManager()
@@ -83,12 +85,106 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         
         
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
+    //TODO:5秒ごとに保存
+    func saveTimer(timer:NSTimer){
+        //現在時刻取得(CSVにするにあたり、String化)
+        let dateFormatter = NSDateFormatter()
+        dateFormatter.locale = NSLocale(localeIdentifier: "en_US")
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        let now = NSDate()
+        let nowString = dateFormatter.stringFromDate(now)
+        
+        //データの保存→平均にする？(今は一旦置いとこう)
+        
+        //初期化
+        
+        
+    }
+    //TODO:10分ごとに送信
+    
+    //MARK: -
+    
+    //MARK:MSBClientManagerDelegate(MSBandとの接続管理)
+    func clientManager(clientManager: MSBClientManager!, clientDidConnect client: MSBClient!) {
+        startCoCoAS(clientManager, client: client)
+    }
+    
+    func clientManager(clientManager: MSBClientManager!, clientDidDisconnect client: MSBClient!) {
+        //再接続
+        print("Client切れたよ！")
+        //MSBClientManager.sharedManager().connectClient(self.client)
+    }
+    
+    func clientManager(clientManager: MSBClientManager!, client: MSBClient!, didFailToConnectWithError error: NSError!) {
+        //再接続
+        print("Client接続失敗してるよ")
+        startCoCoAS(clientManager, client: client)
+    }
+
+    func startCoCoAS(clientManager: MSBClientManager,client:MSBClient){
+        print("client did connected!!")
+        self.client!.tileDelegate = self
+        //Pageをtileに送る
+        var tile:MSBTile = self.tileWithButtonLayout()!
+        self.client?.tileManager.addTile(tile, completionHandler: {
+            (err) in
+            if (err == nil || err.code == MSBErrorType.TileAlreadyExist.rawValue){
+                self.message.text = "Creating a page with text button..."
+                var pageDatas = self.buttonPage()
+                self.client?.tileManager.setPages(pageDatas, tileId: self.TILEID, completionHandler: {
+                    (err2) in
+                    if (err2 == nil) {
+                        self.message.text = "Page sent!"
+                    }else{
+                        self.message.text = err2.description
+                        print("error2:" + err2.description)
+                    }
+                })
+            }else{
+                self.message.text = err.description
+                print("error1:" + err.description)
+            }
+        })
+        
+        //生体データ取得開始
+        if self.client?.sensorManager.heartRateUserConsent() == MSBUserConsent.Granted{
+            startHeartRateUpdates(self.client!)
+        }else{
+            self.message.text = "Requesting user consent for accessing HeartRate..."
+            self.client?.sensorManager.requestHRUserConsentWithCompletion(
+                {[weak self](userConsent:Bool,err:NSError!) -> Void in
+                    if let weakSelf = self {
+                        if(userConsent){
+                            /*
+                             let startHRselector:Selector = #selector(ViewController.startHeartRateUpdates)
+                             NSTimer.scheduledTimerWithTimeInterval(5,target: weakSelf,selector:　startHRselector,userInfo: weakSelf.client!,repeats: true)
+                             */
+                            weakSelf.startHeartRateUpdates(weakSelf.client!)
+                        }else{
+                            weakSelf.HRtext.text = "User consent declined";
+                        }
+                    }
+                })
+        }
+        
+        self.startGSRUpdates()
+        self.startAccelermaterUpdates()
+        
+        //通知の開始
+        self.doNotification = true;
+        self.sendNotificationToBand(self.client!)
+        
+    }
+    
+
+    //MARK: -
+    //MARK:MSBandTileの初期化
     //MSBandのタイルのレイアウトを定義
     func tileWithButtonLayout()->MSBTile?{
         let tileName:String = "CoCoAS tile"
@@ -160,31 +256,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     }
 
     
-    //MARK:-
-    //MARK: Helper methods
-    //画面が閉じた時の処理
-    func closeClients(){
-        stopHeartRateUpdates()
-        stopGSRUpdates()
-        stopAccelermaterUpdates()
-        MSBClientManager.sharedManager().cancelClientConnection(self.client)
-        print("接続を切ったよ！")
-        
-    }
-    //HRQualityをStringで返す
-    func qualityToString(hrData:MSBSensorHeartRateData!)->String{
-        switch hrData.quality {
-        case MSBSensorHeartRateQuality.Acquiring:
-            return "Acquiring"
-        case MSBSensorHeartRateQuality.Locked:
-            return "Locked"
-        }
-    }
-    //時刻を比較出来るように
-    
     
     //MARK: -
-    //MARK:Notification manage
+    //MARK:MSBandへの通知を管理
     func sendNotificationToBand(client:MSBClient){
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0)) {
             while(true){
@@ -227,10 +301,64 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         }
         return isStress
     }
+    //MARK: -
+    //MARK:MSBand(のTile)からの通知を管理
+    func client(client: MSBClient!, tileDidOpen event: MSBTileEvent!) {
+    }
+    
+    func client(client: MSBClient!, tileDidClose event: MSBTileEvent!) {
+    }
+    
+    func client(client: MSBClient!, buttonDidPress event: MSBTileButtonEvent!) {
+        print("pressed button!")
+        //Bandへ通知
+        let tileString = "Thank you!"
+        let bodyString = "You labeled.Please go back." //FIX ME: 現在時刻を加える？
+        client.notificationManager.showDialogWithTileID(TILEID, title: tileString, body: bodyString, completionHandler: {
+            (didPressError) in
+            if didPressError != nil{
+                print (didPressError.description)
+            }
+        })
+        //TODO:ラベルを取得し永続化
+        let nowButton:String = event.buttonId.description
+        print(nowButton)
+        
+        let now = NSDate()
+        
+        
+        self.doNotification = true;
+    }
+    
+    
+
+    //MARK:-
+    //MARK: Helper methods
+    //画面が閉じた時の処理
+    func closeClients(){
+        stopHeartRateUpdates()
+        stopGSRUpdates()
+        stopAccelermaterUpdates()
+        MSBClientManager.sharedManager().cancelClientConnection(self.client)
+        print("接続を切ったよ！")
+        
+    }
+    //HRQualityをStringで返す
+    func qualityToString(hrData:MSBSensorHeartRateData!)->String{
+        switch hrData.quality {
+        case MSBSensorHeartRateQuality.Acquiring:
+            return "Acquiring"
+        case MSBSensorHeartRateQuality.Locked:
+            return "Locked"
+        }
+    }
+    
+    
+    
     
     
     //MARK: -
-    //MARK:LifelogDatasUpdate
+    //MARK:ライフログデータ取得
     //HR
     func startHeartRateUpdates(client:MSBClient){
         let HRhandler = {[weak self](hrData:MSBSensorHeartRateData!,handlerror:NSError!) in
@@ -262,10 +390,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         let startHRselector:Selector = #selector(ViewController.startHeartRateUpdates)
         //self.performSelector(startHRselector, withObject: nil, afterDelay: 5)
         NSTimer.scheduledTimerWithTimeInterval(5,target: self,selector: startHRselector,userInfo: nil,repeats: true)
-        
-        
-        //UIBackgroundTaskIdentifierを使ってみよっと。Timerじゃダメだった
-        
     }
     
     func stopHeartRateUpdates(){
@@ -354,111 +478,13 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
         print("位置情報取得Error!")
     }
-    
-    //MARK: -
-    func startCoCoAS(clientManager: MSBClientManager,client:MSBClient){
-        print("client did connected!!")
-        self.client!.tileDelegate = self
-        //Pageをtileに送る
-        var tile:MSBTile = self.tileWithButtonLayout()!
-        self.client?.tileManager.addTile(tile, completionHandler: {
-            (err) in
-            if (err == nil || err.code == MSBErrorType.TileAlreadyExist.rawValue){
-                self.message.text = "Creating a page with text button..."
-                var pageDatas = self.buttonPage()
-                self.client?.tileManager.setPages(pageDatas, tileId: self.TILEID, completionHandler: {
-                    (err2) in
-                    if (err2 == nil) {
-                        self.message.text = "Page sent!"
-                    }else{
-                        self.message.text = err2.description
-                        print("error2:" + err2.description)
-                    }
-                })
-            }else{
-                self.message.text = err.description
-                print("error1:" + err.description)
-            }
-        })
-        
-        //生体データ取得開始
-        if self.client?.sensorManager.heartRateUserConsent() == MSBUserConsent.Granted{
-            startHeartRateUpdates(self.client!)
-        }else{
-            self.message.text = "Requesting user consent for accessing HeartRate..."
-            self.client?.sensorManager.requestHRUserConsentWithCompletion(
-                {[weak self](userConsent:Bool,err:NSError!) -> Void in
-                    if let weakSelf = self {
-                        if(userConsent){
-                            /*
-                             let startHRselector:Selector = #selector(ViewController.startHeartRateUpdates)
-                             NSTimer.scheduledTimerWithTimeInterval(5,target: weakSelf,selector:　startHRselector,userInfo: weakSelf.client!,repeats: true)
-                             */
-                            weakSelf.startHeartRateUpdates(weakSelf.client!)
-                        }else{
-                            weakSelf.HRtext.text = "User consent declined";
-                        }
-                    }
-                })
-        }
-        
-        self.startGSRUpdates()
-        //self.startAccelermaterUpdates()
-        
-        //通知の開始
-        self.doNotification = true;
-        self.sendNotificationToBand(self.client!)
 
-    }
-    //MARK:MSBClientManagerDelegate
-    func clientManager(clientManager: MSBClientManager!, clientDidConnect client: MSBClient!) {
-        startCoCoAS(clientManager, client: client)
-    }
-    
-    func clientManager(clientManager: MSBClientManager!, clientDidDisconnect client: MSBClient!) {
-        //再接続
-        print("Client切れたよ！")
-        //MSBClientManager.sharedManager().connectClient(self.client)
-    }
-    
-    func clientManager(clientManager: MSBClientManager!, client: MSBClient!, didFailToConnectWithError error: NSError!) {
-        //再接続
-        print("Client接続失敗してるよ")
-        startCoCoAS(clientManager, client: client)        
-    }
+}
     
     
-    //MARK: -
-    //MARK:MSBClitentTileDelegate
-    func client(client: MSBClient!, tileDidOpen event: MSBTileEvent!) {
-    }
-    
-    func client(client: MSBClient!, tileDidClose event: MSBTileEvent!) {
-    }
-    
-    func client(client: MSBClient!, buttonDidPress event: MSBTileButtonEvent!) {
-        print("pressed button!")
-        //Bandへ通知
-        let tileString = "Thank you!"
-        let bodyString = "You labeled.Please go back." //FIX ME: 現在時刻を加える？
-        client.notificationManager.showDialogWithTileID(TILEID, title: tileString, body: bodyString, completionHandler: {
-            (didPressError) in
-            if didPressError != nil{
-                print (didPressError.description)
-            }
-        })
-        //TODO:ラベルを取得し永続化
-        let nowButton:String = event.buttonId.description
-        print(nowButton)
-        
-        let now = NSDate()
-        
-        
-        self.doNotification = true;
-        }
-        
-        
-    }
+
+
+
     
 
     
