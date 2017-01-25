@@ -20,8 +20,13 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //通知判定
     var doNotification:Bool = false;
 
-    //stress判定
-    var hr:Int = 0;
+    //生体データ
+    var hr:Int = 0
+    var gsr:Int = 0
+    var accX:Double = 0.0
+    var accY:Double = 0.0
+    var accZ:Double = 0.0
+    var accS:Double = 0.0
     
     //位置データ取得
     var clmanager: CLLocationManager!
@@ -274,9 +279,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     func startGSRUpdates(){
         let GSRhandler = {[weak self](gsrData:MSBSensorGSRData!,gsrError:NSError!)in
             if let weakSelf = self {
-                let gsr = Int(bitPattern:gsrData.resistance)
+                self!.gsr = Int(bitPattern:gsrData.resistance)
                 let now = NSDate()
-                weakSelf.GSRtext.text = "GSR : " + gsr.description
+                weakSelf.GSRtext.text = "GSR : " + self!.gsr.description
 
                 //GSRの永続化
             }
@@ -302,22 +307,21 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     func startAccelermaterUpdates(){
         let Acchandler = {[weak self](accData:MSBSensorAccelerometerData!,accError:NSError!)in
 
-            let accX = accData.x
-            let accY = accData.y
-            let accZ = accData.z
-            let accS = sqrt(accX*accX + accY*accY + accZ*accZ)
+            self!.accX = accData.x
+            self!.accY = accData.y
+            self!.accZ = accData.z
+            self!.accS = sqrt(accData.x*accData.x + accData.y*accData.y + accData.z*accData.z)
             let now = NSDate()
             
             if let weakSelf = self {
-                weakSelf.accXtext.text = "AccX : " + accX.description
-                weakSelf.accYtext.text = "AccY : " + accY.description
-                weakSelf.accZtext.text = "AccZ : " + accZ.description
+                weakSelf.accXtext.text = "AccX : " + self!.accX.description
+                weakSelf.accYtext.text = "AccY : " + self!.accY.description
+                weakSelf.accZtext.text = "AccZ : " + self!.accZ.description
             }
             
             //ACCの永続化
             
         }
-        
         //３分ごとに取得。
         do{
             try self.client?.sensorManager.startAccelerometerUpdatesToQueue(nil, withHandler: Acchandler)
