@@ -155,6 +155,35 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     }
     
     //TODO:10分ごとに送信
+    func postTimer(timer:NSTimer){
+            //インターネットに接続していたらデータを送信
+            //ディスプレイ用のカウンタ
+            //counter = counter + 1
+        
+            //ファイル中身
+            print("センサデータの保存されたcsvを読み込み中")
+            let lifelogContents = NSString(contentsOfFile: self.lifelogDataPath, encoding: NSUTF8StringEncoding, error: nil)! as String
+                    
+            //POST送信
+            print("データをPOSTします")
+            let params = ["data" : lifelogContents, "userName" : userName]
+            Alamofire.request(.POST, "http://life-cloud.ht.sfc.keio.ac.jp/~karu/cocoas/Cocoas.php", parameters: params)
+            .response { (request, response, data, error) in
+                            
+            if (response?.statusCode == 200) {
+            //通信が成功したらファイルのクリーンアップ
+            print("fabiusData sent.")
+                                self.fileCleanup("fabius")
+                                //ポストしなかった回数変数の初期化
+                                self.didNotPostCounter = 0
+            } else {
+                                println("Connection ERROR.\n==========")
+                                println(toString(response) + "\n===========")
+                                println(toString(data) + "\n==========")
+                                println(error)
+            }
+        
+    }
     
     
     //MARK: -
@@ -316,6 +345,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                     let now = NSDate()
                     let nowString = self.dateToStrint(now)
                     //TODO: 直前の通知＋30分後を調べる。今の時刻がそれよりあとなら、通知をする
+                    let lastNotifiDate =
                     let startNotifiDate = NSDate(timeInterval: 60*30, sinceDate:now)//nowを直前通知時刻にすること。
                     print("通知開始予定時刻：")
                     if self.judgeStress() && now.compare(startNotifiDate) == .OrderedAscending {
@@ -373,7 +403,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 print (didPressError.description)
             }
         })
-        //TODO:ラベルを取得し永続化
+        //ラベルを取得しcsvに保存
         var labelString = "";
         let nowButton = event.buttonId
         print(nowButton)
@@ -448,6 +478,23 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         return dateFormatter.dateFromString(dateString)!
     }
     
+    //現在のネットワーク接続状況をStringで返す
+    func getNetworkState() -> String {
+        let statusType = IJReachability.isConnectedToNetworkOfType()
+        var status: String = ""
+        
+        switch statusType {
+        case .WWAN:
+            status = "Mobile"
+        case .WiFi:
+            status = "WiFi"
+        case .NotConnected:
+            status = "Not Connected"
+        }
+        
+        return status
+    }
+
     
     
     
