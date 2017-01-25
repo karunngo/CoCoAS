@@ -8,6 +8,7 @@ target 'CoCoAS' do
   # Pods for CoCoAS
   pod 'Realm', :git => 'https://github.com/realm/realm-cocoa.git', :branch => 'master', :submodules => true
   pod 'RealmSwift', :git => 'https://github.com/realm/realm-cocoa.git', :branch => 'master', :submodules => true 
+  pod 'Alamofire','3.5.1'
 end
 
 post_install do |installer|
