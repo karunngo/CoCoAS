@@ -34,7 +34,10 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     var latitude: CLLocationDegrees!
     var longitude: CLLocationDegrees!
     
-    //各データcsvの一行目
+    //各データのパスとcsvの一行目
+    var lifelogDataPath = ""
+    var labelDataPath = ""
+    var notifiDataPath = ""
     let lifelogDataColumn = "date,hr,hrQuality,gsr,accx,accy,accz,accs,lati,longi\n"
     let labelDataColumn = "date,label\n"
     let notifiDataColumn = "date\n"
@@ -61,35 +64,35 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         
         //データ保存用のファイルパス
         let path = NSSearchPathForDirectoriesInDomains(.DocumentDirectory,.UserDomainMask, true)[0] as String
-        let lifelogDataPath:String = path + "/lifelog.csv"
-        let labelDataPath:String = path + "/label.csv"
-        let notifiDataPath:String = path + "/notification.csv"
+        self.lifelogDataPath = path + "/lifelog.csv"
+        self.labelDataPath = path + "/label.csv"
+        self.notifiDataPath = path + "/notification.csv"
         
         //各データ保存用のファイルが存在するか確認
         let checkValidation:NSFileManager = NSFileManager.defaultManager()
         
-        if (checkValidation.fileExistsAtPath(lifelogDataPath) == false) {
-            print(lifelogDataPath + "は存在しません。ファイルを作ります");
+        if (checkValidation.fileExistsAtPath(self.lifelogDataPath) == false) {
+            print(self.lifelogDataPath + "は存在しません。ファイルを作ります");
             do{
-                try self.lifelogDataColumn.writeToFile(lifelogDataPath, atomically: true, encoding: NSUTF8StringEncoding)
+                try self.lifelogDataColumn.writeToFile(self.lifelogDataPath, atomically: true, encoding: NSUTF8StringEncoding)
             }catch let error as NSError{
                 print("lifelog.csvファイル作成失敗　error:"+error.description)
             }
         }
         
-        if (checkValidation.fileExistsAtPath(labelDataPath) == false) {
-            print(labelDataPath + "は存在しません。ファイルを作ります");
+        if (checkValidation.fileExistsAtPath(self.labelDataPath) == false) {
+            print(self.labelDataPath + "は存在しません。ファイルを作ります");
             do{
-                try self.labelDataColumn.writeToFile(labelDataPath, atomically: true, encoding: NSUTF8StringEncoding)
+                try self.labelDataColumn.writeToFile(self.labelDataPath, atomically: true, encoding: NSUTF8StringEncoding)
             }catch let error as NSError{
                 print("label.csvファイル作成失敗　error:"+error.description)
             }
         }
         
-        if (checkValidation.fileExistsAtPath(notifiDataPath) == false) {
-            print(notifiDataPath + "は存在しません。ファイルを作ります");
+        if (checkValidation.fileExistsAtPath(self.notifiDataPath) == false) {
+            print(self.notifiDataPath + "は存在しません。ファイルを作ります");
             do{
-                try self.lifelogDataColumn.writeToFile(notifiDataPath, atomically: true, encoding: NSUTF8StringEncoding)
+                try self.lifelogDataColumn.writeToFile(self.notifiDataPath, atomically: true, encoding: NSUTF8StringEncoding)
             }catch let error as NSError{
                 print("notification.csvファイル作成失敗　error:"+error.description)
             }
@@ -140,15 +143,20 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         dateFormatter.locale = NSLocale(localeIdentifier: "en_US")
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         let now = NSDate()
-        let nowString = dateFormatter.stringFromDate(now)
-        //lifelogDataColumn:date,hr,hrquality,gsr,accx,accy,accz,accs,lati,longi
-        let saveData:String = nowString + "," + self.hr
-
-    
-        //初期化
         
+        //lifelogDataColumn:date,hr,hrquality,gsr,accx,accy,accz,accs,lati,longi
+        let nowString = dateFormatter.stringFromDate(now)
+        let hrS:String = String(self.hr) + "," + self.hrQuality
+        let gsrS:String = String(self.gsr)
+        let acc4:String = String(self.accX) + "," + String(self.accY) + "," + String(self.accZ) + "," + String(self.accS)
+        let locateS:String = String(self.latitude) + "," + String(self.longitude)
+        let saveData:String = nowString + "," + hrS + "," + gsrS + "," + acc4 + "," + locateS + "\n"
+        print("saveData=" + saveData)
+        
+        self.appendToCSV(self.lifelogDataPath, data: saveData)
         
     }
+    
     //TODO:10分ごとに送信
     
     //MARK: -
@@ -425,7 +433,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         let HRhandler = {[weak self](hrData:MSBSensorHeartRateData!,handlerror:NSError!) in
             if let weakSelf = self {
                 self!.hr = Int(bitPattern:hrData.heartRate)
-                self!.hrQuality:String = self!.qualityToString(hrData)
+                self!.hrQuality = self!.qualityToString(hrData)
                 let now = NSDate()
                 weakSelf.HRtext.text = "HR : " + hrData.heartRate.description
                 
