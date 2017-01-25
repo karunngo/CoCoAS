@@ -22,6 +22,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
 
     //生体データ
     var hr:Int = 0
+    var hrQuality:String = "";
     var gsr:Int = 0
     var accX:Double = 0.0
     var accY:Double = 0.0
@@ -34,9 +35,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     var longitude: CLLocationDegrees!
     
     //各データcsvの一行目
-    let lifelogDataColumn = "date,hr,gsr,accx,accy,accz,accs,lati,longi"
-    let labelDataColumn = "date,label"
-    let notifiDataColumn = "date"
+    let lifelogDataColumn = "date,hr,hrQuality,gsr,accx,accy,accz,accs,lati,longi\n"
+    let labelDataColumn = "date,label\n"
+    let notifiDataColumn = "date\n"
     
     
     
@@ -140,9 +141,10 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         let now = NSDate()
         let nowString = dateFormatter.stringFromDate(now)
-        
-        //データの保存→平均にする？(今は一旦置いとこう)
-        
+        //lifelogDataColumn:date,hr,hrquality,gsr,accx,accy,accz,accs,lati,longi
+        let saveData:String = nowString + "," + self.hr
+
+    
         //初期化
         
         
@@ -394,6 +396,24 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         }
     }
     
+    //データベースに書き込む(前のデータを一旦読み込み、追加して再度書き込み)
+    func appendToCSV(path:String,data:String){
+        var csvData:String = "";
+        var newCsvData:String = "";
+        do{
+            try csvData = NSString(contentsOfFile: path, encoding: NSUTF8StringEncoding) as String
+            newCsvData = csvData + data + "\n"
+            do{
+                try newCsvData.writeToFile(path, atomically: true, encoding: NSUTF8StringEncoding)
+            }catch let error1 as NSError{
+                print("データベースへの書き込み失敗" + error1.description)
+            }
+        }catch let error as NSError{
+            print("ファイルの読み込み失敗" + error.description)
+        }
+        
+    }
+    
     
     
     
@@ -405,7 +425,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         let HRhandler = {[weak self](hrData:MSBSensorHeartRateData!,handlerror:NSError!) in
             if let weakSelf = self {
                 self!.hr = Int(bitPattern:hrData.heartRate)
-                let hrQuality:String = self!.qualityToString(hrData)
+                self!.hrQuality:String = self!.qualityToString(hrData)
                 let now = NSDate()
                 weakSelf.HRtext.text = "HR : " + hrData.heartRate.description
                 
