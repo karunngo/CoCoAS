@@ -8,7 +8,6 @@
 
 import UIKit
 import CoreLocation
-import RealmSwift
 
 class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDelegate,CLLocationManagerDelegate{
     var client:MSBClient? = nil
@@ -46,19 +45,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         super.viewDidLoad()
         self.message.text="CoCoASにようこそ!"
         let notificationCenter = NSNotificationCenter.defaultCenter()
-         //realmで中身確認
-        let realm = try! Realm()
-        //let test1 = realm.objects(RealmHR)
-        //let test2 = realm.objects(RealmGSR)
-        let test3 = realm.objects(RealmAcc)
-        let test4 = realm.objects(RealmLocation)
-        let test5 = realm.objects(RealmLabel)
-        //print(test1)
-        //print(test2)
-        print(test3)
-        print(test4)
-        print(test5)
-        //*/
         
         
         //位置情報の取得開始
@@ -191,36 +177,17 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     }
     //時刻を比較出来るように
     
-    //realmのデータを全削除(デバック用)
-    func resetRealm(){
-        let realmURL = Realm.Configuration.defaultConfiguration.fileURL!
-        let realmURLs = [
-            realmURL,
-            realmURL.URLByAppendingPathExtension("lock"),
-            ]
-        print(realmURLs)
-        let manager = NSFileManager.defaultManager()
-        for URL in realmURLs {
-            do {
-                try manager.removeItemAtURL(URL!)
-            } catch {
-                print("エラー！消されてないよ")
-            }
-        }
-    }
-
+    
     //MARK: -
     //MARK:Notification manage
     func sendNotificationToBand(client:MSBClient){
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0)) {
-            let realm = try! Realm()
             while(true){
                 if self.doNotification{
                     let now = NSDate()
-                    let dates = realm.objects(RealmNotification).sorted("date", ascending: false)
-                    let startNotifiDate = NSDate(timeInterval: 60*30, sinceDate: dates[0].date!)
+                    //TODO: 直前の通知＋30分後を調べる。今の時刻がそれよりあとなら、通知をする
+                    let startNotifiDate = NSDate(timeInterval: 60*30, sinceDate:now)//nowを直前通知時刻にすること。
                     print("通知開始予定時刻：")
-                    print(dates[0].date!)
                     if self.judgeStress() && now.compare(startNotifiDate) == .OrderedAscending {
                         print("judgeStressがスタート")
                         let tileString = "Are You Stressed?"
@@ -228,11 +195,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                         client.notificationManager.showDialogWithTileID(self.TILEID, title: tileString, body: bodyString, completionHandler:{
                             (sendError) in
                             if(sendError == nil){
-                                let realmNotifi = RealmNotification()
-                                realmNotifi.date = now
-                                try! realm.write {
-                                    realm.add(realmNotifi)
-                                }
                                 print("送るのは成功")
                                 self.doNotification = false
                                 print("falseになったよ")
@@ -274,15 +236,8 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 weakSelf.HRtext.text = "HR : " + hrData.heartRate.description
                 
                 //HRの永続化
-                let realmHR = RealmHR()
-                realmHR.date = now
-                realmHR.quality = hrQuality
-                realmHR.hr = self!.hr
-                let realm = try! Realm()
-                try! realm.write {
-                    realm.add(realmHR)
-                }
-                
+
+                //HRを取得し続ける
                 do{
                     try weakSelf.client?.sensorManager.startHeartRateUpdatesToQueue(nil, withHandler: {
                         [weak self](HrData : MSBSensorHeartRateData!,hrError:NSError!)in})
@@ -324,13 +279,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 weakSelf.GSRtext.text = "GSR : " + gsr.description
 
                 //GSRの永続化
-                let realmGSR = RealmGSR()
-                realmGSR.date = now
-                realmGSR.gsr = gsr
-                let realm = try! Realm()
-                try! realm.write {
-                    realm.add(realmGSR)
-                }
             }
             
         }
@@ -366,20 +314,11 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 weakSelf.accZtext.text = "AccZ : " + accZ.description
             }
             
-            /*//ACCの永続化
-            let realmAcc = RealmAcc()
-            realmAcc.date = now
-            realmAcc.x = accX
-            realmAcc.y = accY
-            realmAcc.z = accZ
-            realmAcc.synthesized = accS
-            let realm = try! Realm()
-            try! realm.write {
-                realm.add(realmAcc)
-            }
-             */
+            //ACCの永続化
+            
         }
         
+        //３分ごとに取得。
         do{
             try self.client?.sensorManager.startAccelerometerUpdatesToQueue(nil, withHandler: Acchandler)
         }catch let error as NSError{
@@ -405,14 +344,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         self.longitudeText.text = "longitude : " + longitude.description
         
         //Locationの永続化
-        let realmLocation = RealmLocation()
-        realmLocation.date = now
-        realmLocation.latitude = Double(latitude)
-        realmLocation.longitude = Double(longitude)
-        let realm = try! Realm()
-        try! realm.write {
-            realm.add(realmLocation)
-        }
+        
     }
     
     func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
@@ -511,18 +443,12 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                 print (didPressError.description)
             }
         })
-        //ラベルを取得し永続化
+        //TODO:ラベルを取得し永続化
         let nowButton:String = event.buttonId.description
         print(nowButton)
         
         let now = NSDate()
-        let realmLabel = RealmLabel()
-        realmLabel.date = now
-        realmLabel.name = "test"
-        let realm = try! Realm()
-        try! realm.write {
-            realm.add(realmLabel)
-        }
+        
         
         self.doNotification = true;
         }
