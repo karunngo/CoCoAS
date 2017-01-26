@@ -576,7 +576,7 @@ class ViewController:UIViewController,UITextFieldDelegate,MSBClientManagerDelega
         case "labelData":
             cleanPath = self.labelDataPath
             break;
-        case "notifiDataPath":
+        case "notifiData":
             cleanPath = self.notifiDataPath
         default:
             print("不明のfileCleanup")
