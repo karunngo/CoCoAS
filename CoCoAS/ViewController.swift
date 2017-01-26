@@ -292,7 +292,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         print("start save & post!")
         let saveSelector:Selector = #selector(ViewController.saveTimer)
         let postSelector:Selector = #selector(ViewController.postTimer)
-        NSTimer.scheduledTimerWithTimeInterval(5, target: self, selector: saveSelector, userInfo: client, repeats: true)
+        NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: saveSelector, userInfo: client, repeats: true)
         NSTimer.scheduledTimerWithTimeInterval(60*10, target: self, selector: postSelector, userInfo: client, repeats: true)
     }
     
