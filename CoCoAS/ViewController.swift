@@ -191,62 +191,51 @@ class ViewController:UIViewController,UITextFieldDelegate,MSBClientManagerDelega
     func postTimer(){
         //ファイル中身
         
-        var lifelogContents:String = ""
-        var labelContents:String = ""
-        var notifiContents:String = ""
-        //読み込みに成功したか
-        var lifelogReadSuccess:Bool = true
-        var labelReadSuccess:Bool = true
-        var notifiReadSuccess:Bool = true
-        print("センサデータの保存されたcsvを読み込み中")
-        //同じこと繰り返してる。完結に書きたいな…
-        do{try lifelogContents = NSString(contentsOfFile: self.lifelogDataPath, encoding: NSUTF8StringEncoding) as String
-            print("lifelogContents=")
-            print(lifelogContents + "\n")
-        }catch{lifelogReadSuccess = false}
-        
-        do{try labelContents = NSString(contentsOfFile: self.labelDataPath, encoding: NSUTF8StringEncoding) as String
-        }catch{labelReadSuccess = false}
-        
-        do{try notifiContents = NSString(contentsOfFile: self.notifiDataPath, encoding: NSUTF8StringEncoding) as String
-        }catch{notifiReadSuccess = false}
-        
         //POST送信
-        if lifelogReadSuccess{
-            postData(lifelogContents, fileName: "lifelogData")
-        }
-        
-        if labelReadSuccess{
-            postData(labelContents, fileName: "labelData")
-        }
-        
-        if notifiReadSuccess{
-            postData(notifiContents, fileName: "notifiData")
-        }
-        
+            postData(self.lifelogDataPath, fileName: "lifelogData")
+            postData(self.labelDataPath, fileName: "labelData")
+            postData(self.notifiDataPath, fileName: "notifiData")
+    
     }
     
-    func postData(dataContents:String,fileName:String){
+    func postData(dataPath:String,fileName:String){
         print("データをPOSTします")
+        let dataURL = NSURL(fileURLWithPath:dataPath)
         if let sendUserName = self.userName{
-            let params:[String:AnyObject]? = ["data" : dataContents, "user_name" : sendUserName, "type":fileName]
-            Alamofire.request(.POST, "http://life-cloud.ht.sfc.keio.ac.jp/~karu/cocoas/Cocoas.php", parameters: params)
-                .response { (request, response, data, error) in
-                
-                    if (response?.statusCode == 200) {
-                        //通信が成功したらファイルのクリーンアップ
-                        //FIXME: サーバからの返答に応じて削除するか判断する(今は保存出来てなくともファイルを消してる。危険）
-                        print(fileName + "のデータを送りました")
-                        self.fileCleanup(fileName)
-                    } else {
-                        print(fileName + "の送信に失敗しました")
-                        if let errorCode = response?.statusCode{
-                            print("エラーコード:" + String(errorCode))
-                        }else{
-                            print("エラーコードは無し")
-                        }
-                    }
-            }
+            Alamofire.upload(.POST, "http://life-cloud.ht.sfc.keio.ac.jp/~karu/cocoas/Cocoas.php",
+                             multipartFormData: { multipartFormData in
+                                //csvデータをそのまま送る
+                                multipartFormData.appendBodyPart(data:sendUserName.dataUsingEncoding(NSUTF8StringEncoding)!,name:"user_name")
+                                multipartFormData.appendBodyPart(data:fileName.dataUsingEncoding(NSUTF8StringEncoding)!,name:"type")
+                                multipartFormData.appendBodyPart(fileURL:dataURL,name:"data",fileName:fileName + ".csv",mimeType:"text/plain")
+                                },
+                             encodingCompletion:{ encodingResult in
+                                switch encodingResult{
+                                    case .Success(let upload, _, _):
+                                        upload.response{ (request, response, data, error) in
+                                            if (response?.statusCode == 200) {
+                                                //通信が成功したらファイルのクリーンアップ
+                                                //FIXME: サーバからの返答に応じて削除するか判断する(今は保存出来てなくともファイルを消してる。危険）
+                                                print(fileName + "のデータを送りました")
+                                                self.fileCleanup(fileName)
+                                            } else {
+                                                print(fileName + "の送信に失敗しました")
+                                                if let errorCode = response?.statusCode{
+                                                    print("エラーコード:" + String(errorCode))
+                                                }else{
+                                                    print("エラーコードは無し")
+                                                }
+                                            }
+                                    
+                                        }
+                                        break;
+                                    
+                                    case .Failure(let encodingError):
+                                        print("エンコード失敗。エラー:")
+                                        print(encodingError)
+                                        break;
+                                }
+                            })
         }
     }
     
