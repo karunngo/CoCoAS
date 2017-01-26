@@ -141,7 +141,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     }
     
     //TODO:5秒ごとに保存
-    func saveTimer(timer:NSTimer){
+    func saveTimer(){
         //現在時刻取得(CSVにするにあたり、String化)
         let now = NSDate()
         
@@ -159,7 +159,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     }
     
     //TODO:10分ごとに送信
-    func postTimer(timer:NSTimer){
+    func postTimer(){
         //ファイル中身
         
         var lifelogContents:String = ""
@@ -284,6 +284,12 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         self.doNotification = true;
         self.sendNotificationToBand(self.client!)
         
+        //保存と送信の開始
+        print("start save & post!")
+        let saveSelector:Selector = #selector(ViewController.saveTimer)
+        let postSelector:Selector = #selector(ViewController.postTimer)
+        NSTimer.scheduledTimerWithTimeInterval(5, target: self, selector: saveSelector, userInfo: client, repeats: true)
+        NSTimer.scheduledTimerWithTimeInterval(60*10, target: self, selector: postSelector, userInfo: client, repeats: true)
     }
     
 
