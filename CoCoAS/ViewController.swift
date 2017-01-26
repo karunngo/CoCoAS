@@ -10,7 +10,7 @@ import UIKit
 import CoreLocation
 import Alamofire
 
-class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDelegate,CLLocationManagerDelegate{
+class ViewController:UIViewController,UITextFieldDelegate,MSBClientManagerDelegate,MSBClientTileDelegate,CLLocationManagerDelegate{
     var client:MSBClient? = nil
     
     //Tileのレイアウト
@@ -36,7 +36,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     var longitude: CLLocationDegrees!
     
     //ユーザ情報
-    var userName = "test"
+    var userName:String? = nil
     
     //各データのパスとcsvの一行目
     var lifelogDataPath = ""
@@ -61,9 +61,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     @IBOutlet weak var latitudeText: UILabel!
     @IBOutlet weak var longitudeText: UILabel!
     
-    //TextBoxとButton
     @IBOutlet weak var nameBox: UITextField!
     
+    let userDefalut = NSUserDefaults.standardUserDefaults()
     
     
     
@@ -72,6 +72,14 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         super.viewDidLoad()
         self.message.text="CoCoASにようこそ!"
         let notificationCenter = NSNotificationCenter.defaultCenter()
+        
+        //UserNameの設定
+        nameBox.delegate = self
+        if let nameText = userDefalut.stringForKey("userName"){
+            nameBox.text = nameText
+            self.userName = nameText
+        }
+        
         
         //データ保存用のファイルパス
         let path = NSSearchPathForDirectoriesInDomains(.DocumentDirectory,.UserDomainMask, true)[0] as String
@@ -147,17 +155,19 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         // Dispose of any resources that can be recreated.
     }
     
-    //Enterが押されたら、保存
+    //MARK: 画面のリスナー
+    //TextBoxのEnterが押されたら、保存
     @IBAction func didEndEditName(sender: AnyObject) {
-        
+        self.userName = nameBox.text
+        userDefalut.setObject(nameBox, forKey: "userName")
     }
     
     //通信テストボタン
     @IBAction func didTapSendData(sender: AnyObject) {
         postTimer()
     }
-        
-    //TODO:5秒ごとに保存
+    
+    //MARK:定期的な保存&送信
     func saveTimer(){
         //現在時刻取得(CSVにするにあたり、String化)
         print("saveTimer動いてるよ！")
@@ -176,7 +186,6 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         
     }
     
-    //TODO:10分ごとに送信
     func postTimer(){
         //ファイル中身
         
@@ -215,7 +224,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     
     func postData(dataContents:String,fileName:String){
         print("データをPOSTします")
-        let params = ["data" : dataContents, "user_name" : self.userName, "type":fileName]
+        let params= ["data" : dataContents, "user_name" : self.userName, "type":fileName]
         Alamofire.request(.POST, "http://life-cloud.ht.sfc.keio.ac.jp/~karu/cocoas/Cocoas.php", parameters: params)
             .response { (request, response, data, error) in
                 
