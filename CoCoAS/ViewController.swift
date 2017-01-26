@@ -201,6 +201,8 @@ class ViewController:UIViewController,UITextFieldDelegate,MSBClientManagerDelega
         print("センサデータの保存されたcsvを読み込み中")
         //FIX ME: 同じこと繰り返してる。完結に書きたい
         do{try lifelogContents = NSString(contentsOfFile: self.lifelogDataPath, encoding: NSUTF8StringEncoding) as String
+            print("lifelogContents=")
+            print(lifelogContents + "\n")
         }catch{lifelogReadSuccess = false}
         
         do{try labelContents = NSString(contentsOfFile: self.labelDataPath, encoding: NSUTF8StringEncoding) as String
@@ -237,6 +239,11 @@ class ViewController:UIViewController,UITextFieldDelegate,MSBClientManagerDelega
                         self.fileCleanup(fileName)
                     } else {
                         print(fileName + "の送信に失敗しました")
+                        if let errorCode = response?.statusCode{
+                            print("エラーコード:" + String(errorCode))
+                        }else{
+                            print("エラーコードは無し")
+                        }
                     }
             }
         }
