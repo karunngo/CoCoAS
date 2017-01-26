@@ -46,6 +46,9 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     let labelDataColumn = "date,label\n"
     let notifiDataColumn = "date\n"
     
+    //最後に通知を行った時刻
+    var lastNotifiDate:NSDate? = nil
+    
     
     
     //View
@@ -375,13 +378,26 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0)) {
             while(true){
                 if self.doNotification{
+                    var allowNotification:Bool = false;
                     let now = NSDate()
                     let nowString = self.dateToStrint(now)
+                    var startNotification:NSDate? = nil
+                    
                     //TODO: 直前の通知＋30分後を調べる。今の時刻がそれよりあとなら、通知をする
-                    //let lastNotifiDate =
-                    let startNotifiDate = NSDate(timeInterval: 60*30, sinceDate:now)//nowを直前通知時刻にすること。
-                    print("通知開始予定時刻：")
-                    if self.judgeStress() && now.compare(startNotifiDate) == .OrderedAscending {
+                    //最終通知時刻があれば、通知を再開する時刻startNotifiを決定。
+                    if let  lastNoti = self.lastNotifiDate{
+                        startNotification = NSDate(timeInterval: 60*30, sinceDate:lastNoti)//nowを直前通知時刻にすること。
+                    }
+                    //startNotificationが定義されてれば、現在時刻と比較し判定。nilなら通知許可
+                    if let startNoti = startNotification{
+                        if now.compare(startNoti) == .OrderedAscending{
+                            allowNotification = true
+                        }
+                    }else{
+                        allowNotification = true
+                    }
+                    
+                    if self.judgeStress() && allowNotification {
                         print("judgeStressがスタート")
                         let tileString = "Are You Stressed?"
                         let bodyString = "Please labeled." //+ 現在時刻
@@ -397,7 +413,8 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                                 print(sendError.description)
                             }
                         })
-                        self.doNotification = false;
+                        self.lastNotifiDate = now
+                        self.doNotification = false
                     }
                     sleep(500)
                 }
