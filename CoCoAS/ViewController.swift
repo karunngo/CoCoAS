@@ -159,7 +159,9 @@ class ViewController:UIViewController,UITextFieldDelegate,MSBClientManagerDelega
     //TextBoxのEnterが押されたら、保存
     @IBAction func didEndEditName(sender: AnyObject) {
         self.userName = nameBox.text
-        userDefalut.setObject(nameBox, forKey: "userName")
+        if let newName = nameBox.text{
+            userDefalut.setObject(NSString(UTF8String: newName), forKey: "userName")
+        }
     }
     
     //通信テストボタン
