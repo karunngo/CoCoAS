@@ -224,17 +224,19 @@ class ViewController:UIViewController,UITextFieldDelegate,MSBClientManagerDelega
     
     func postData(dataContents:String,fileName:String){
         print("データをPOSTします")
-        let params= ["data" : dataContents, "user_name" : self.userName, "type":fileName]
-        Alamofire.request(.POST, "http://life-cloud.ht.sfc.keio.ac.jp/~karu/cocoas/Cocoas.php", parameters: params)
-            .response { (request, response, data, error) in
+        if let sendUserName = self.userName{
+            let params:[String:AnyObject]? = ["data" : dataContents, "user_name" : sendUserName, "type":fileName]
+            Alamofire.request(.POST, "http://life-cloud.ht.sfc.keio.ac.jp/~karu/cocoas/Cocoas.php", parameters: params)
+                .response { (request, response, data, error) in
                 
-                if (response?.statusCode == 200) {
-                    //通信が成功したらファイルのクリーンアップ
-                    print(fileName + "のデータを送りました")
-                    self.fileCleanup(fileName)
-                } else {
-                    print(fileName + "の送信に失敗しました")
-                }
+                    if (response?.statusCode == 200) {
+                        //通信が成功したらファイルのクリーンアップ
+                        print(fileName + "のデータを送りました")
+                        self.fileCleanup(fileName)
+                    } else {
+                        print(fileName + "の送信に失敗しました")
+                    }
+            }
         }
     }
     
