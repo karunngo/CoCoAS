@@ -93,6 +93,9 @@
                                 <nil key="textColor"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
+                                <connections>
+                                    <action selector="didEndEditName:" destination="BYZ-38-t0r" eventType="editingDidEndOnExit" id="hSe-cU-Dpd"/>
+                                </connections>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FkI-lz-cG4">
                                 <rect key="frame" x="138" y="451" width="100" height="50"/>
@@ -101,11 +104,11 @@
                                     <constraint firstAttribute="height" constant="50" id="Cwx-Ka-W23"/>
                                     <constraint firstAttribute="width" constant="100" id="vaB-Qz-r83"/>
                                 </constraints>
-                                <state key="normal" title="Save Name">
+                                <state key="normal" title="Send Data">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                                 <connections>
-                                    <action selector="didTapSaveName:" destination="BYZ-38-t0r" eventType="touchUpInside" id="PP4-qV-zpX"/>
+                                    <action selector="didTapSendData:" destination="BYZ-38-t0r" eventType="touchUpInside" id="68i-mJ-uiV"/>
                                 </connections>
                             </button>
                         </subviews>

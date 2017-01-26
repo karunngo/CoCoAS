@@ -147,11 +147,16 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
         // Dispose of any resources that can be recreated.
     }
     
-    //ボタンが押されたら、名前を保存
-    @IBAction func didTapSaveName(sender: AnyObject) {
+    //Enterが押されたら、保存
+    @IBAction func didEndEditName(sender: AnyObject) {
         
     }
     
+    //通信テストボタン
+    @IBAction func didTapSendData(sender: AnyObject) {
+        postTimer()
+    }
+        
     //TODO:5秒ごとに保存
     func saveTimer(){
         //現在時刻取得(CSVにするにあたり、String化)
