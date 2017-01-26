@@ -143,6 +143,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     //TODO:5秒ごとに保存
     func saveTimer(){
         //現在時刻取得(CSVにするにあたり、String化)
+        print("saveTimer動いてるよ！")
         let now = NSDate()
         
         //lifelogDataColumn:date,hr,hrquality,gsr,accx,accy,accz,accs,lati,longi
@@ -377,7 +378,7 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
                     let now = NSDate()
                     let nowString = self.dateToStrint(now)
                     //TODO: 直前の通知＋30分後を調べる。今の時刻がそれよりあとなら、通知をする
-                    let lastNotifiDate =
+                    //let lastNotifiDate =
                     let startNotifiDate = NSDate(timeInterval: 60*30, sinceDate:now)//nowを直前通知時刻にすること。
                     print("通知開始予定時刻：")
                     if self.judgeStress() && now.compare(startNotifiDate) == .OrderedAscending {
