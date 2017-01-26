@@ -104,6 +104,9 @@
                                 <state key="normal" title="Save Name">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
+                                <connections>
+                                    <action selector="didTapSaveName:" destination="BYZ-38-t0r" eventType="touchUpInside" id="PP4-qV-zpX"/>
+                                </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" red="0.0" green="0.50196081400000003" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
@@ -143,6 +146,7 @@
                         <outlet property="latitudeText" destination="4vM-P7-oBo" id="h4v-xO-dnz"/>
                         <outlet property="longitudeText" destination="waw-bu-tj7" id="9ff-S3-RBh"/>
                         <outlet property="message" destination="AAZ-5l-oD0" id="tco-oN-Ghl"/>
+                        <outlet property="nameBox" destination="4YP-K0-To3" id="s5A-Jh-Jbj"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

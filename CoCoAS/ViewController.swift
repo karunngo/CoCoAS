@@ -61,6 +61,10 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     @IBOutlet weak var latitudeText: UILabel!
     @IBOutlet weak var longitudeText: UILabel!
     
+    //TextBoxとButton
+    @IBOutlet weak var nameBox: UITextField!
+    
+    
     
     
     //MARK: -
@@ -141,6 +145,11 @@ class ViewController:UIViewController,MSBClientManagerDelegate,MSBClientTileDele
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    //ボタンが押されたら、名前を保存
+    @IBAction func didTapSaveName(sender: AnyObject) {
+        
     }
     
     //TODO:5秒ごとに保存
