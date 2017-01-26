@@ -12,7 +12,6 @@
 		44B580FB1E18C64D00E4CE4F /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 44B580FA1E18C64D00E4CE4F /* CoreBluetooth.framework */; };
 		44B580FE1E19567F00E4CE4F /* Stress.png in Resources */ = {isa = PBXBuildFile; fileRef = 44B580FC1E19567F00E4CE4F /* Stress.png */; };
 		44B580FF1E19567F00E4CE4F /* StressS.png in Resources */ = {isa = PBXBuildFile; fileRef = 44B580FD1E19567F00E4CE4F /* StressS.png */; };
-		44BB26021E24FE8A00D724E2 /* RealmData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44BB26011E24FE8A00D724E2 /* RealmData.swift */; };
 		44E38F021E176F9400C19407 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44E38F011E176F9400C19407 /* AppDelegate.swift */; };
 		44E38F041E176F9400C19407 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44E38F031E176F9400C19407 /* ViewController.swift */; };
 		44E38F071E176F9400C19407 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 44E38F051E176F9400C19407 /* Main.storyboard */; };
@@ -27,7 +26,6 @@
 		44B580FA1E18C64D00E4CE4F /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CoreBluetooth.framework; sourceTree = "<group>"; };
 		44B580FC1E19567F00E4CE4F /* Stress.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Stress.png; sourceTree = "<group>"; };
 		44B580FD1E19567F00E4CE4F /* StressS.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StressS.png; sourceTree = "<group>"; };
-		44BB26011E24FE8A00D724E2 /* RealmData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmData.swift; sourceTree = "<group>"; };
 		44E38EFE1E176F9400C19407 /* CoCoAS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CoCoAS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		44E38F011E176F9400C19407 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		44E38F031E176F9400C19407 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -94,7 +92,6 @@
 				44E38F101E176F9400C19407 /* Info.plist */,
 				44B580FC1E19567F00E4CE4F /* Stress.png */,
 				44B580FD1E19567F00E4CE4F /* StressS.png */,
-				44BB26011E24FE8A00D724E2 /* RealmData.swift */,
 				44B580FA1E18C64D00E4CE4F /* CoreBluetooth.framework */,
 				44E38F191E17724600C19407 /* MicrosoftBandKit_iOS.framework */,
 				44E38F181E17707D00C19407 /* objc-Header.h */,
@@ -243,7 +240,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				44E38F041E176F9400C19407 /* ViewController.swift in Sources */,
-				44BB26021E24FE8A00D724E2 /* RealmData.swift in Sources */,
 				44E38F021E176F9400C19407 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
