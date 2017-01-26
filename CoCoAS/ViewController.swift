@@ -199,7 +199,7 @@ class ViewController:UIViewController,UITextFieldDelegate,MSBClientManagerDelega
         var labelReadSuccess:Bool = true
         var notifiReadSuccess:Bool = true
         print("センサデータの保存されたcsvを読み込み中")
-        //FIX ME: 同じこと繰り返してる。完結に書きたい
+        //同じこと繰り返してる。完結に書きたいな…
         do{try lifelogContents = NSString(contentsOfFile: self.lifelogDataPath, encoding: NSUTF8StringEncoding) as String
             print("lifelogContents=")
             print(lifelogContents + "\n")
@@ -235,6 +235,7 @@ class ViewController:UIViewController,UITextFieldDelegate,MSBClientManagerDelega
                 
                     if (response?.statusCode == 200) {
                         //通信が成功したらファイルのクリーンアップ
+                        //FIXME: サーバからの返答に応じて削除するか判断する(今は保存出来てなくともファイルを消してる。危険）
                         print(fileName + "のデータを送りました")
                         self.fileCleanup(fileName)
                     } else {
@@ -334,6 +335,7 @@ class ViewController:UIViewController,UITextFieldDelegate,MSBClientManagerDelega
     //MARK: -
     //MARK:MSBandTileの初期化
     //MSBandのタイルのレイアウトを定義
+    //FIXME: 評価はYES,NOでいいのか。文言はこれでいいのか(先行研究調べられてない…)
     func tileWithButtonLayout()->MSBTile?{
         let tileName:String = "CoCoAS tile"
         var tile:MSBTile? = nil
@@ -407,6 +409,7 @@ class ViewController:UIViewController,UITextFieldDelegate,MSBClientManagerDelega
     
     //MARK: -
     //MARK:MSBandへの通知を管理
+    //FIXME: ランダムor定時版を作る
     func sendNotificationToBand(client:MSBClient){
         
         dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED,0)) {
@@ -417,7 +420,7 @@ class ViewController:UIViewController,UITextFieldDelegate,MSBClientManagerDelega
                     let nowString = self.dateToStrint(now)
                     var startNotification:NSDate? = nil
                     
-                    //TODO: 直前の通知＋30分後を調べる。今の時刻がそれよりあとなら、通知をする
+                    //直前の通知＋30分後を調べる。今の時刻がそれよりあとなら、通知をする
                     //最終通知時刻があれば、通知を再開する時刻startNotifiを決定。
                     if let  lastNoti = self.lastNotifiDate{
                         startNotification = NSDate(timeInterval: 60*30, sinceDate:lastNoti)//nowを直前通知時刻にすること。
@@ -460,7 +463,7 @@ class ViewController:UIViewController,UITextFieldDelegate,MSBClientManagerDelega
 
     }
     
-    //ストレスがあるかの判定
+    //ストレスがあるかの仮判定
     func judgeStress() -> Bool{
     var isStress:Bool = false
         if self.hr > 65{
